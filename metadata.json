@@ -1,0 +1,9 @@
+{
+  "name": "RoadSence",
+  "description": "Real-time road hazard detection and warning system using Google Maps, Gemini AI, and Firebase.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ],
+  "majorCapabilities": []
+}

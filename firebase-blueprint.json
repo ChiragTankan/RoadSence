@@ -1,0 +1,65 @@
+{
+  "entities": {
+    "Hazard": {
+      "title": "Road Hazard",
+      "description": "Information about a detected road hazard such as a pothole or debris.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["pothole", "construction", "debris", "speed_bump", "other"],
+          "description": "The type of hazard identified."
+        },
+        "location": {
+          "type": "object",
+          "description": "Firestore GeoPoint containing latitude and longitude."
+        },
+        "geohash": {
+          "type": "string",
+          "description": "Geohash for proximity queries."
+        },
+        "reporterId": {
+          "type": "string",
+          "description": "The UID of the user who reported the hazard."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the hazard was detected."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "Optional URL to the blurred image of the hazard."
+        },
+        "isPublic": {
+          "type": "boolean",
+          "description": "Whether the hazard is synced to the public collection."
+        }
+      },
+      "required": ["type", "location", "geohash", "reporterId", "timestamp"]
+    },
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "User specific settings and history.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "displayName": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "public_hazards/{hazardId}": {
+      "schema": "Hazard",
+      "description": "Global collection of road hazards visible to all users."
+    },
+    "users/{userId}/my_reports/{reportId}": {
+      "schema": "Hazard",
+      "description": "User-specific collection of hazards reported by this user."
+    },
+    "users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile document."
+    }
+  }
+}
