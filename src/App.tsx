@@ -168,7 +168,7 @@ export default function App() {
           </div>
           <button 
             onClick={signInWithGoogle}
-            className="w-full flex items-center justify-center gap-3 bg-white text-black font-semibold py-4 px-6 rounded-2xl hover:bg-gray-100 transition-all active:scale-95"
+            className="w-full flex items-center justify-center gap-3 bg-black text-white border border-white/20 font-black py-4 px-6 rounded-2xl hover:bg-white/5 transition-all active:scale-95 uppercase italic tracking-widest"
           >
             <LogIn size={20} />
             Sign in with Google to Start
@@ -186,12 +186,12 @@ export default function App() {
       {/* Top Controls - Simplified */}
       {!isNavigating && (
         <header className="absolute top-4 inset-x-4 z-50 flex justify-between items-center pointer-events-none">
-          <div className="h-12 w-auto px-4 bg-white/95 backdrop-blur shadow-lg rounded-2xl flex items-center gap-3 pointer-events-auto border border-blue-100">
-            <Shield size={24} className="text-blue-600" />
-            <span className="font-bold text-gray-800 tracking-tight">RoadSence</span>
+          <div className="h-12 w-auto px-4 bg-black backdrop-blur-3xl shadow-lg rounded-2xl flex items-center gap-3 pointer-events-auto border border-white/20">
+            <Shield size={24} className="text-blue-500" />
+            <span className="font-bold text-white tracking-tight">RoadSence</span>
           </div>
-          <button className="h-12 w-12 bg-white/95 backdrop-blur shadow-lg rounded-2xl flex items-center justify-center pointer-events-auto hover:bg-gray-50 transition-all">
-            <User size={24} className="text-gray-700" />
+          <button className="h-12 w-12 bg-black backdrop-blur-3xl shadow-lg rounded-2xl flex items-center justify-center pointer-events-auto hover:bg-gray-900 transition-all border border-white/20">
+            <User size={24} className="text-white" />
           </button>
         </header>
       )}
@@ -203,17 +203,17 @@ export default function App() {
           animate={{ opacity: 1, x: 0 }}
           className="absolute top-20 left-4 z-50 pointer-events-none"
         >
-          <div className="bg-white/90 backdrop-blur shadow-xl border border-blue-100 rounded-full px-4 py-2 flex items-center gap-3">
+          <div className="bg-black backdrop-blur-3xl shadow-xl border border-white/20 rounded-[24px] px-4 py-3 flex items-center gap-3">
              <div className="flex -space-x-2">
                 {[1,2,3].map(i => (
-                   <div key={i} className="w-6 h-6 rounded-full bg-blue-100 border-2 border-white flex items-center justify-center overflow-hidden">
-                      <User size={12} className="text-blue-600" />
+                   <div key={i} className="w-6 h-6 rounded-full bg-blue-900/40 border border-white/20 flex items-center justify-center overflow-hidden">
+                      <User size={12} className="text-blue-400" />
                    </div>
                 ))}
              </div>
              <div className="flex flex-col">
-                <span className="text-[10px] font-black uppercase text-blue-600 tracking-wider leading-none">Global Coverage</span>
-                <span className="text-xs font-bold text-gray-700">{hazards.length} potholes synced</span>
+                <span className="text-[10px] font-black uppercase text-blue-400 tracking-wider leading-none">Global Coverage</span>
+                <span className="text-xs font-bold text-white/70">{hazards.length} potholes synced</span>
              </div>
           </div>
         </motion.div>
@@ -225,9 +225,9 @@ export default function App() {
           {/* Mobile Toggle Button */}
           <button 
             onClick={() => setShowLegend(!showLegend)}
-            className="md:hidden w-10 h-10 bg-white/95 backdrop-blur-3xl shadow-[0_15px_35px_-5px_rgba(59,130,246,0.2)] rounded-xl flex items-center justify-center pointer-events-auto border border-white active:scale-95 transition-all"
+            className="md:hidden w-10 h-10 bg-black backdrop-blur-3xl shadow-2xl rounded-xl flex items-center justify-center pointer-events-auto border border-white/20 active:scale-95 transition-all text-white"
           >
-            <Info size={18} className={cn("text-blue-600 transition-transform duration-500", showLegend ? "rotate-90" : "")} />
+            <Info size={18} className={cn("text-blue-500 transition-transform duration-500", showLegend ? "rotate-90" : "")} />
           </button>
 
           {/* Legend Box */}
@@ -239,14 +239,14 @@ export default function App() {
               scale: (showLegend || (typeof window !== 'undefined' && window.innerWidth >= 768)) ? 1 : 0.9
             }}
             className={cn(
-              "bg-white/90 backdrop-blur-3xl p-3 rounded-[24px] border border-white/60",
-              "shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15),0_0_0_1px_rgba(255,255,255,0.8)_inset,0_0_20px_rgba(59,130,246,0.1)]",
+              "bg-black backdrop-blur-3xl p-3 rounded-[24px] border border-white/20",
+              "shadow-[0_20px_50px_-12px_rgba(0,0,0,1)]",
               "flex flex-col gap-3 pointer-events-auto transition-all duration-300",
               "w-28 md:w-32 lg:w-32",
               showLegend ? "flex" : "hidden md:flex"
             )}
           >
-            <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
+            <div className="flex items-center gap-2 border-b border-white/10 pb-2">
                <div className="w-5 h-5 rounded-md bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
                  <MapIcon size={10} className="text-white" />
                </div>
@@ -262,8 +262,8 @@ export default function App() {
                   <div className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-20 pointer-events-none" />
                 </div>
                 <div className="flex flex-col items-start">
-                  <span className="text-[8px] font-black uppercase italic leading-none text-gray-900">Pothole</span>
-                  <span className="text-[6px] font-bold text-gray-400 mt-0.5">Alert</span>
+                  <span className="text-[8px] font-black uppercase italic leading-none text-white">Pothole</span>
+                  <span className="text-[6px] font-bold text-gray-500 mt-0.5">Alert</span>
                 </div>
               </div>
 
@@ -272,24 +272,24 @@ export default function App() {
                   <HardHat size={14} className="text-black" />
                 </div>
                 <div className="flex flex-col items-start text-left">
-                  <span className="text-[8px] font-black uppercase italic leading-none text-gray-900">Work</span>
-                  <span className="text-[6px] font-bold text-gray-400 mt-0.5">Caution</span>
+                  <span className="text-[8px] font-black uppercase italic leading-none text-white">Work</span>
+                  <span className="text-[6px] font-bold text-gray-500 mt-0.5">Caution</span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 opacity-25">
-                <div className="w-8 h-8 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
-                  <Navigation size={14} className="text-gray-400" />
+              <div className="flex items-center gap-2 opacity-10">
+                <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
+                  <Navigation size={14} className="text-white/40" />
                 </div>
                 <div className="flex flex-col items-start opacity-70">
-                  <span className="text-[8px] font-black uppercase italic leading-none text-gray-400">Path</span>
+                  <span className="text-[8px] font-black uppercase italic leading-none text-white/40">Path</span>
                 </div>
               </div>
             </div>
 
             {/* Micro Detail */}
             <div className="mt-1 flex justify-center">
-               <div className="w-6 h-1 rounded-full bg-gray-100" />
+               <div className="w-6 h-1 rounded-full bg-white/10" />
             </div>
           </motion.div>
         </div>
@@ -316,8 +316,8 @@ export default function App() {
           className="h-full w-full"
         >
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           <MapController 
             center={location ? [location.lat, location.lng] : null} 
@@ -372,8 +372,8 @@ export default function App() {
             className="absolute top-6 right-6 left-6 z-[70]"
           >
             <div className="bg-red-600 text-white p-5 rounded-3xl shadow-2xl flex items-center gap-5 border-4 border-white/30 backdrop-blur-md">
-              <div className="bg-white rounded-2xl p-3 shadow-inner">
-                <AlertOctagon size={32} className="text-red-600 animate-bounce" />
+            <div className="bg-black/40 rounded-2xl p-3 shadow-inner border border-white/10">
+                <AlertOctagon size={32} className="text-white animate-bounce" />
               </div>
               <div className="flex-1">
                 <div className="font-black text-xl leading-tight uppercase tracking-tight italic">
@@ -403,7 +403,7 @@ export default function App() {
             exit={{ opacity: 0, y: 100 }}
             className="absolute bottom-10 left-6 right-6 z-[60] pointer-events-none"
           >
-            <div className="bg-black/95 backdrop-blur-2xl border border-white/10 p-6 rounded-[40px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.8)] flex items-center justify-between pointer-events-auto overflow-hidden relative">
+            <div className="bg-black backdrop-blur-2xl border border-white/20 p-6 rounded-[40px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.9)] flex items-center justify-between pointer-events-auto overflow-hidden relative">
               <motion.div 
                 animate={{ x: [-100, 400] }}
                 transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
@@ -471,10 +471,10 @@ export default function App() {
             }}
             disabled={isSearching}
             className={cn(
-              "flex-1 h-20 rounded-3xl shadow-2xl flex items-center justify-center gap-4 transition-all active:scale-95 group relative overflow-hidden border border-white/10",
+              "flex-1 h-20 rounded-3xl shadow-2xl flex items-center justify-center gap-4 transition-all active:scale-95 group relative overflow-hidden border border-white/20",
               isNavigating 
                 ? "bg-red-600 text-white" 
-                : "bg-black/90 backdrop-blur-xl text-white"
+                : "bg-black text-white"
             )}
           >
             {isSearching && <motion.div className="absolute inset-0 bg-blue-500/20 animate-pulse" />}
@@ -497,7 +497,7 @@ export default function App() {
           {/* History Button */}
           {!isNavigating && (
             <button 
-              className="w-16 h-16 bg-black/90 backdrop-blur-xl text-white rounded-2xl shadow-2xl flex flex-col items-center justify-center gap-1 hover:bg-gray-900 transition-all active:scale-90 border border-white/10"
+              className="w-16 h-16 bg-black text-white rounded-2xl shadow-2xl flex flex-col items-center justify-center gap-1 hover:bg-gray-900 transition-all active:scale-90 border border-white/20"
             >
               <Bell size={24} />
               <span className="text-[10px] font-bold uppercase tracking-tight">Alerts</span>
@@ -528,16 +528,16 @@ export default function App() {
                 initial={{ scale: 0.9, y: 30, opacity: 0 }}
                 animate={{ scale: 1, y: 0, opacity: 1 }}
                 exit={{ scale: 0.9, y: 30, opacity: 0 }}
-                className="bg-black/95 backdrop-blur-3xl w-full max-w-sm rounded-[42px] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.8),0_0_20_rgba(59,130,246,0.1)] border border-white/20"
+                className="bg-black w-full max-w-sm rounded-[42px] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,1)] border border-white/20"
               >
                 <div className="p-8 pb-4 flex items-center justify-between">
                   <div className="space-y-1">
                     <h3 className="text-2xl font-black tracking-tight text-white italic uppercase leading-tight">Plan Trip</h3>
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500">Smart Route Sync</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400">Smart Route Sync</p>
                   </div>
                   <button 
                     onClick={() => setShowGoModal(false)} 
-                    className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-all active:scale-90"
+                    className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-full flex items-center justify-center text-white transition-all active:scale-90 border border-white/10"
                   >
                     <X size={20} />
                   </button>
@@ -545,7 +545,7 @@ export default function App() {
                 
                 <div className="p-8 pt-2 space-y-6">
                   <div className="relative group">
-                    <div className="absolute left-5 top-1/2 -translate-y-1/2 text-white/50 group-focus-within:text-blue-500 transition-all">
+                    <div className="absolute left-5 top-1/2 -translate-y-1/2 text-white group-focus-within:text-blue-500 transition-all">
                       <Search size={20} />
                     </div>
                     <input 
@@ -555,7 +555,7 @@ export default function App() {
                       value={destinationInput}
                       onChange={(e) => setDestinationInput(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleGo(destinationInput)}
-                      className="w-full h-16 pl-14 pr-6 bg-white/5 rounded-[28px] border border-white/10 focus:ring-2 focus:ring-blue-500/20 shadow-inner transition-all outline-none text-white font-bold text-lg placeholder:text-white/20 placeholder:font-medium" 
+                      className="w-full h-16 pl-14 pr-6 bg-white/5 rounded-[28px] border border-white/20 focus:ring-1 focus:ring-white/20 shadow-inner transition-all outline-none text-white font-bold text-lg placeholder:text-white/20 placeholder:font-medium" 
                     />
                   </div>
 
@@ -570,10 +570,10 @@ export default function App() {
                 </div>
 
                 {/* Bottom Accents */}
-                <div className="bg-white/5 p-4 px-8 border-t border-white/10 flex justify-between items-center group cursor-pointer hover:bg-white/10 transition-colors">
+                <div className="bg-black p-4 px-8 border-t border-white/20 flex justify-between items-center group cursor-pointer hover:bg-white/5 transition-colors">
                    <div className="flex flex-col">
-                      <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">Home Base</span>
-                      <span className="text-[11px] font-bold text-white/70">Set current location</span>
+                      <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/50">Home Base</span>
+                      <span className="text-[11px] font-bold text-white">Set current location</span>
                    </div>
                    <MapPin size={18} className="text-white/30" />
                 </div>
@@ -583,13 +583,12 @@ export default function App() {
         </AnimatePresence>
       </div>
 
-      {/* Dynamic Navigation Progress Bar */}
       {isNavigating && (
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gray-800 z-[60]">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-black z-[60] border-b border-white/10">
           <motion.div 
             initial={{ width: 0 }}
             animate={{ width: '40%' }}
-            className="h-full bg-blue-500 shadow-[0_0_10px_#3b82f6]"
+            className="h-full bg-blue-500 shadow-[0_0_15px_#3b82f6]"
           />
         </div>
       )}

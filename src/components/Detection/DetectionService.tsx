@@ -110,12 +110,12 @@ export function DetectionService({ location, onClose }: DetectionServiceProps) {
         initial={{ y: 50, scale: 0.9, opacity: 0 }}
         animate={{ y: 0, scale: 1, opacity: 1 }}
         exit={{ y: 50, scale: 0.9, opacity: 0 }}
-        className="relative w-full max-w-sm bg-black/90 backdrop-blur-3xl rounded-[48px] border border-white/20 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.8),0_0_20px_rgba(59,130,246,0.2)] overflow-y-auto max-h-[90vh] scrollbar-hide flex flex-col"
+        className="relative w-full max-w-sm bg-black rounded-[48px] border border-white/20 shadow-[0_50px_100px_-20px_rgba(0,0,0,1)] overflow-y-auto max-h-[90vh] scrollbar-hide flex flex-col"
       >
         {/* Integrated Camera View behind content */}
-        <div className="absolute inset-0 z-0 opacity-40">
+        <div className="absolute inset-0 z-0 opacity-30">
           <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black" />
+          <div className="absolute inset-0 bg-black/60" />
         </div>
 
         {/* Close Button Inside Card */}
