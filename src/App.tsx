@@ -153,11 +153,11 @@ export default function App() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-white font-sans">
+      <div className="min-h-screen bg-black flex flex-col items-center justify-start pt-24 p-6 text-white font-sans overflow-y-auto">
         <motion.div 
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="text-center space-y-8 max-w-md"
+          initial={{ scale: 0.9, y: 20, opacity: 0 }}
+          animate={{ scale: 1, y: 0, opacity: 1 }}
+          className="text-center space-y-8 max-w-sm w-full"
         >
           <div className="w-20 h-20 bg-blue-600 rounded-3xl flex items-center justify-center mx-auto shadow-2xl shadow-blue-500/20">
             <Shield size={40} className="text-white" />
@@ -181,17 +181,17 @@ export default function App() {
   const currentPos: [number, number] = location ? [location.lat, location.lng] : [20.5937, 78.9629];
 
   return (
-    <div className="relative h-screen w-full bg-black overflow-hidden font-sans">
+    <div className="relative h-screen h-[100dvh] w-full bg-black overflow-hidden font-sans selection:bg-blue-500/30">
       
       {/* Top Controls - Simplified */}
       {!isNavigating && (
-        <header className="absolute top-4 inset-x-4 z-50 flex justify-between items-center pointer-events-none">
-          <div className="h-12 w-auto px-4 bg-black backdrop-blur-3xl shadow-lg rounded-2xl flex items-center gap-3 pointer-events-auto border border-white/20">
-            <Shield size={24} className="text-blue-500" />
-            <span className="font-bold text-white tracking-tight">RoadSence</span>
+        <header className="absolute top-6 inset-x-6 z-[600] flex justify-between items-center pointer-events-none">
+          <div className="h-14 w-auto px-5 bg-black backdrop-blur-3xl shadow-lg rounded-[24px] flex items-center gap-3 pointer-events-auto border border-white/20">
+            <Shield size={28} className="text-blue-500" />
+            <span className="font-black text-xl text-white tracking-tighter italic uppercase">RoadSence</span>
           </div>
-          <button className="h-12 w-12 bg-black backdrop-blur-3xl shadow-lg rounded-2xl flex items-center justify-center pointer-events-auto hover:bg-gray-900 transition-all border border-white/20">
-            <User size={24} className="text-white" />
+          <button className="h-14 w-14 bg-black backdrop-blur-3xl shadow-lg rounded-[24px] flex items-center justify-center pointer-events-auto hover:bg-gray-900 transition-all border border-white/20">
+            <User size={28} className="text-white" />
           </button>
         </header>
       )}
@@ -199,11 +199,11 @@ export default function App() {
       {/* Community Stats Badge */}
       {!isNavigating && hazards.length > 0 && (
         <motion.div 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="absolute top-20 left-4 z-50 pointer-events-none"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute top-24 left-0 right-0 z-[550] pointer-events-none flex justify-center px-4"
         >
-          <div className="bg-black backdrop-blur-3xl shadow-xl border border-white/20 rounded-[24px] px-4 py-3 flex items-center gap-3">
+          <div className="bg-black backdrop-blur-3xl shadow-2xl border border-white/20 rounded-[28px] px-6 py-4 flex items-center gap-4 pointer-events-auto">
              <div className="flex -space-x-2">
                 {[1,2,3].map(i => (
                    <div key={i} className="w-6 h-6 rounded-full bg-blue-900/40 border border-white/20 flex items-center justify-center overflow-hidden">
@@ -369,9 +369,9 @@ export default function App() {
             initial={{ y: -100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -100, opacity: 0 }}
-            className="absolute top-6 right-6 left-6 z-[70]"
+            className="absolute top-16 left-0 right-0 z-[800] pointer-events-none flex justify-center px-6"
           >
-            <div className="bg-red-600 text-white p-5 rounded-3xl shadow-2xl flex items-center gap-5 border-4 border-white/30 backdrop-blur-md">
+            <div className="bg-red-600 text-white p-6 rounded-[32px] shadow-[0_40px_80px_-15px_rgba(220,38,38,0.5)] flex items-center gap-6 border-4 border-white/30 backdrop-blur-xl max-w-sm w-full pointer-events-auto ring-1 ring-black/20">
             <div className="bg-black/40 rounded-2xl p-3 shadow-inner border border-white/10">
                 <AlertOctagon size={32} className="text-white animate-bounce" />
               </div>
@@ -440,8 +440,8 @@ export default function App() {
 
       {/* Bottom Actions */}
       <div className={cn(
-        "absolute bottom-8 inset-x-6 z-50 flex flex-col gap-4 transition-all duration-700",
-        isNavigating ? "translate-y-24 opacity-0 pointer-events-none" : "translate-y-0 opacity-100"
+        "absolute bottom-16 inset-x-6 z-[500] flex flex-col gap-6 transition-all duration-700",
+        isNavigating ? "translate-y-40 opacity-0 pointer-events-none" : "translate-y-0 opacity-100"
       )}>
         
         {/* Main Controls - Row of Actions */}
@@ -504,33 +504,40 @@ export default function App() {
             </button>
           )}
         </div>
+      </div>
 
-        {/* AI Detection Overlay */}
-        <AnimatePresence>
-          {showDetection && location && (
-            <DetectionService 
-              location={location} 
-              onClose={() => setShowDetection(false)} 
+      {/* AI Detection Overlay */}
+      <AnimatePresence>
+        {showDetection && location && (
+          <DetectionService 
+            location={location} 
+            onClose={() => setShowDetection(false)} 
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Go (Destination) Modal */}
+      <AnimatePresence>
+        {showGoModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[999] bg-black/95 backdrop-blur-2xl"
+          >
+            <button 
+              className="absolute inset-0 cursor-default" 
+              onClick={() => setShowGoModal(false)} 
             />
-          )}
-        </AnimatePresence>
-
-        {/* Go (Destination) Modal */}
-        <AnimatePresence>
-          {showGoModal && (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-md flex items-center justify-center p-6"
-            >
+            
+            <div className="absolute inset-0 overflow-y-auto pt-6 px-4 flex flex-col items-center">
               <motion.div 
-                initial={{ scale: 0.9, y: 30, opacity: 0 }}
-                animate={{ scale: 1, y: 0, opacity: 1 }}
-                exit={{ scale: 0.9, y: 30, opacity: 0 }}
-                className="bg-black w-full max-w-sm rounded-[42px] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,1)] border border-white/20"
+                initial={{ y: -100, opacity: 0, scale: 0.95 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
+                exit={{ y: -100, opacity: 0, scale: 0.95 }}
+                className="relative w-full max-w-sm bg-black rounded-[42px] border border-white/20 shadow-[0_100px_200px_-50px_rgba(0,0,0,1)] flex flex-col overflow-hidden mb-20"
               >
-                <div className="p-8 pb-4 flex items-center justify-between">
+                <div className="p-8 pb-4 flex items-center justify-between shrink-0">
                   <div className="space-y-1">
                     <h3 className="text-2xl font-black tracking-tight text-white italic uppercase leading-tight">Plan Trip</h3>
                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400">Smart Route Sync</p>
@@ -543,7 +550,7 @@ export default function App() {
                   </button>
                 </div>
                 
-                <div className="p-8 pt-2 space-y-6">
+                <div className="p-8 pt-2 space-y-6 overflow-y-auto scrollbar-hide">
                   <div className="relative group">
                     <div className="absolute left-5 top-1/2 -translate-y-1/2 text-white group-focus-within:text-blue-500 transition-all">
                       <Search size={20} />
@@ -570,7 +577,7 @@ export default function App() {
                 </div>
 
                 {/* Bottom Accents */}
-                <div className="bg-black p-4 px-8 border-t border-white/20 flex justify-between items-center group cursor-pointer hover:bg-white/5 transition-colors">
+                <div className="bg-black p-4 px-8 border-t border-white/20 flex justify-between items-center group cursor-pointer hover:bg-white/5 transition-colors shrink-0">
                    <div className="flex flex-col">
                       <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/50">Home Base</span>
                       <span className="text-[11px] font-bold text-white">Set current location</span>
@@ -578,10 +585,10 @@ export default function App() {
                    <MapPin size={18} className="text-white/30" />
                 </div>
               </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {isNavigating && (
         <div className="absolute top-0 left-0 right-0 h-1 bg-black z-[60] border-b border-white/10">

@@ -103,20 +103,23 @@ export function DetectionService({ location, onClose }: DetectionServiceProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-md flex items-center justify-center p-6"
+      className="fixed inset-0 z-[999] bg-black/95 backdrop-blur-2xl"
     >
-      {/* Floating Card UI */}
-      <motion.div 
-        initial={{ y: 50, scale: 0.9, opacity: 0 }}
-        animate={{ y: 0, scale: 1, opacity: 1 }}
-        exit={{ y: 50, scale: 0.9, opacity: 0 }}
-        className="relative w-full max-w-sm bg-black rounded-[48px] border border-white/20 shadow-[0_50px_100px_-20px_rgba(0,0,0,1)] overflow-y-auto max-h-[90vh] scrollbar-hide flex flex-col"
-      >
-        {/* Integrated Camera View behind content */}
-        <div className="absolute inset-0 z-0 opacity-30">
-          <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-black/60" />
-        </div>
+      <button className="absolute inset-0 cursor-default" onClick={onClose} />
+      
+      {/* Absolute Top-Center Card UI */}
+      <div className="absolute inset-0 overflow-y-auto pt-6 px-4 flex flex-col items-center">
+        <motion.div 
+          initial={{ y: -100, opacity: 0, scale: 0.95 }}
+          animate={{ y: 0, opacity: 1, scale: 1 }}
+          exit={{ y: -100, opacity: 0, scale: 0.95 }}
+          className="relative w-full max-w-sm bg-black rounded-[42px] border border-white/20 shadow-[0_100px_200px_-50px_rgba(0,0,0,1)] flex flex-col overflow-hidden mb-20"
+        >
+          {/* Integrated Camera View behind content */}
+          <div className="absolute inset-0 z-0 opacity-40">
+            <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/70" />
+          </div>
 
         {/* Close Button Inside Card */}
         <div className="absolute top-6 right-6 z-[60]">
@@ -128,7 +131,7 @@ export function DetectionService({ location, onClose }: DetectionServiceProps) {
           </button>
         </div>
 
-        <div className="relative z-10 px-6 pt-10 pb-8 flex flex-col items-center">
+        <div className="relative z-10 px-6 pt-10 pb-8 flex flex-col items-center overflow-y-auto scrollbar-hide">
           <AnimatePresence mode="wait">
             {step === 'choice' ? (
               <motion.div 
@@ -235,6 +238,7 @@ export function DetectionService({ location, onClose }: DetectionServiceProps) {
           </AnimatePresence>
         </div>
       </motion.div>
-    </motion.div>
+    </div>
+  </motion.div>
   );
 }
