@@ -23,8 +23,11 @@ export function useHazards(
   const [liveHazards, setLiveHazards] = useState<Hazard[]>([]);
   const [osmHazards, setOsmHazards] = useState<Hazard[]>([]);
 
+  // Destination (last point of route)
+  const destination = activeRoute.length > 0 ? activeRoute[activeRoute.length - 1] : null;
+
   // Fetch OpenStreetMap Data (Real-world construction/hazards/potholes)
-  const fetchOsmData = useCallback(async (lat: number, lng: number) => {
+  const fetchOsmData = useCallback(async (lat: number, lng: number, key: string) => {
     try {
       // Fetch construction zones and hazards within ~10km from Overpass API
       // We look for specific road defect tags: hazard, smoothness=horrible, surface=potholes
@@ -44,13 +47,31 @@ export function useHazards(
         out skel qt;
       `;
       
-      const res = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`);
+      const res = await fetch(`https://overpass-api.de/api/interpreter`, {
+        method: 'POST',
+        body: `data=${encodeURIComponent(overpassQuery)}`,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      });
+      
+      if (!res.ok) {
+        throw new Error(`Overpass API responded with status ${res.status}`);
+      }
+
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await res.text();
+        console.warn("Unexpected non-JSON response from Overpass:", text.slice(0, 100));
+        return;
+      }
+
       const data = await res.json();
       
-      const hazards: Hazard[] = data.elements
+      const newHazards: Hazard[] = data.elements
         .filter((e: any) => e.lat && e.lon)
         .map((e: any) => ({
-          id: `osm-${e.id}`,
+          id: `osm-${e.id}-${key}`,
           type: (e.tags?.hazard === 'pothole' || e.tags?.surface === 'potholes') ? 'pothole' : 'construction',
           location: { latitude: e.lat, longitude: e.lon },
           geohash: '',
@@ -60,7 +81,12 @@ export function useHazards(
           source: 'osm'
         }));
       
-      setOsmHazards(hazards);
+      setOsmHazards(prev => {
+        // Simple deduplication by ID
+        const combined = [...prev, ...newHazards];
+        const unique = Array.from(new Map(combined.map(h => [h.id, h])).values());
+        return unique;
+      });
     } catch (err) {
       console.error("OSM intel fetch failed:", err);
     }
@@ -68,9 +94,15 @@ export function useHazards(
 
   useEffect(() => {
     if (currentLocation) {
-      fetchOsmData(currentLocation.lat, currentLocation.lng);
+      fetchOsmData(currentLocation.lat, currentLocation.lng, 'local');
     }
-  }, [currentLocation?.lat, currentLocation?.lng, fetchOsmData]);
+  }, [currentLocation?.lat, currentLocation?.lng]);
+
+  useEffect(() => {
+    if (destination) {
+      fetchOsmData(destination[0], destination[1], 'dest');
+    }
+  }, [destination?.[0], destination?.[1]]);
 
   // Prepare base hazards from JSON
   const baseHazards = useMemo(() => {
@@ -128,14 +160,11 @@ export function useHazards(
         const coords = getCoords(h);
         if (!coords) return false;
         
-        // Check distance to any point in the route (approximate polyline distance)
-        // For performance, we sample the route points if it's very long
-        const sampleRate = activeRoute.length > 100 ? Math.ceil(activeRoute.length / 50) : 1;
-        
-        return activeRoute.some((point, idx) => {
-          if (idx % sampleRate !== 0) return false;
+        // We check every route point to ensure no hazards are missed (no sampling)
+        // 300m threshold to account for map data and GPS offsets
+        return activeRoute.some((point) => {
           const dist = distanceBetween(coords, point) * 1000;
-          return dist < 100; // Within 100m of the active path
+          return dist < 300; 
         });
       });
     }

@@ -123,6 +123,17 @@
     { "id": "gs-ph-pune-2", "lat": 18.525, "lng": 73.855, "type": "pothole", "description": "Pune Open Data: Verified pothole", "source": "geosadak" },
     { "id": "gs-ph-pune-3", "lat": 18.53, "lng": 73.86, "type": "pothole", "description": "Pune Open Data: Recurring defect", "source": "geosadak" },
     { "id": "gs-ph-pune-4", "lat": 18.515, "lng": 73.845, "type": "pothole", "description": "Pune Open Data: Critical hazard", "source": "geosadak" },
-    { "id": "gs-ph-pune-5", "lat": 18.51, "lng": 73.84, "type": "pothole", "description": "Pune Open Data: Road decay", "source": "geosadak" }
+    { "id": "gs-ph-pune-5", "lat": 18.51, "lng": 73.84, "type": "pothole", "description": "Pune Open Data: Road decay", "source": "geosadak" },
+    
+    { "id": "test-ph-delhi-1", "lat": 28.612, "lng": 77.229, "type": "pothole", "description": "India Gate Circle: Severe road defect", "source": "geosadak" },
+    { "id": "test-ph-delhi-2", "lat": 28.613, "lng": 77.230, "type": "pothole", "description": "Janpath Road: Deep pit", "source": "geosadak" },
+    { "id": "test-ph-delhi-3", "lat": 28.630, "lng": 77.218, "type": "pothole", "description": "CP Outer Circle: Major pothole", "source": "geosadak" },
+    { "id": "test-ph-mumbai-1", "lat": 18.922, "lng": 72.834, "type": "pothole", "description": "Gateway of India Plaza: Surface decay", "source": "geosadak" },
+    { "id": "test-ph-mumbai-2", "lat": 19.088, "lng": 72.868, "type": "pothole", "description": "Mumbai Airport Link Road: Hazard spotted", "source": "geosadak" },
+    { "id": "test-ph-blr-1", "lat": 12.972, "lng": 77.594, "type": "pothole", "description": "MG Road: Deep surface defect", "source": "geosadak" },
+    { "id": "test-ph-blr-2", "lat": 12.980, "lng": 77.590, "type": "pothole", "description": "Cubbon Park Entrance: Road breakage", "source": "geosadak" },
+    { "id": "test-ph-hyd-1", "lat": 17.361, "lng": 78.474, "type": "pothole", "description": "Charminar Area: Severe pits", "source": "geosadak" },
+    { "id": "test-ph-kol-1", "lat": 22.585, "lng": 88.347, "type": "pothole", "description": "Howrah Bridge Approach: Major hazard", "source": "geosadak" },
+    { "id": "test-ph-chennai-1", "lat": 13.082, "lng": 80.270, "type": "pothole", "description": "Central Station Road: Cluster alert", "source": "geosadak" }
   ]
 }
