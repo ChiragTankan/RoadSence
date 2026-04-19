@@ -211,8 +211,15 @@ export function DetectionService({ location, onClose }: DetectionServiceProps) {
                          <div className="flex flex-col items-center gap-4 text-white text-center">
                             {status === 'success' ? <CheckCircle size={48} className="text-green-500" /> : <Shield size={48} className="text-blue-500 animate-pulse text-center" />}
                             <div className="space-y-1">
-                               <h4 className="text-lg font-black uppercase italic">{status}...</h4>
-                               <p className="text-[10px] text-white/50 px-8">Point saving to RoadSence global map</p>
+                               <h4 className="text-lg font-black uppercase italic">
+                                 {status === 'blurring' ? 'Privacy Guard' : 
+                                  status === 'detecting' ? 'AI Verification' :
+                                  status === 'reporting' ? 'Global Registry' :
+                                  status === 'success' ? 'Report Logged' : 'Processing'}...
+                               </h4>
+                               <p className="text-[10px] text-white/50 px-8">
+                                 {status === 'success' ? 'Your report has been registered to the community map.' : 'Point saving to RoadSence global intelligence map'}
+                               </p>
                             </div>
                          </div>
                        </motion.div>

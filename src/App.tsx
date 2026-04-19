@@ -8,6 +8,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline, Circle } from
 import L from 'leaflet';
 import { Navigation, Bell, Map as MapIcon, Shield, Search, AlertOctagon, User, LogIn, Camera, X, AlertTriangle, HardHat, Info, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useNavigate, useLocation as useRouterLocation, useSearchParams } from 'react-router-dom';
 import { auth, signInWithGoogle, db } from './lib/firebase';
 import { distanceBetween } from 'geofire-common';
 import { useLocation } from './hooks/useLocation';
@@ -29,21 +30,21 @@ L.Marker.prototype.options.icon = DefaultIcon;
 
 // Custom Icons for different hazards
 const potholeIcon = L.divIcon({
-  html: `<div class="bg-red-600 rounded-full w-9 h-9 flex items-center justify-center border-2 border-white shadow-2xl animate-pulse">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+  html: `<div class="hazard-marker-pothole">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
          </div>`,
   className: '',
-  iconSize: [36, 36],
-  iconAnchor: [18, 18]
+  iconSize: [48, 48],
+  iconAnchor: [24, 24]
 });
 
 const constructionIcon = L.divIcon({
-  html: `<div class="bg-yellow-500 rounded-xl w-9 h-9 flex items-center justify-center border-2 border-white shadow-2xl">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="2" rx="1"/><path d="M5 11V7a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v4"/><path d="M8 11v-4"/><path d="M16 11v-4"/><path d="m12 11 4 4"/><path d="m12 11-4 4"/></svg>
+  html: `<div class="hazard-marker-construction">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="2" rx="1"/><path d="M5 11V7a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v4"/><path d="M8 11v-4"/><path d="M16 11v-4"/><path d="m12 11 4 4"/><path d="m12 11-4 4"/></svg>
          </div>`,
   className: '',
-  iconSize: [36, 36],
-  iconAnchor: [18, 18]
+  iconSize: [48, 48],
+  iconAnchor: [24, 24]
 });
 
 // Component to handle map centering and route focus
@@ -78,19 +79,48 @@ function MapController({ center, route, isNavigating }: { center: [number, numbe
 }
 
 export default function App() {
+  const navigate = useNavigate();
+  const routerLocation = useRouterLocation();
+  const [searchParams] = useSearchParams();
+
   const [user, setUser] = useState(auth.currentUser);
+  const [route, setRoute] = useState<[number, number][]>([]);
   const { location, error: locError } = useLocation();
-  const { hazards, criticalHazards } = useHazards(location, user);
+  const { hazards, visibleHazards, criticalHazards } = useHazards(location, user, route);
   const [activeTab, setActiveTab] = useState<'map' | 'reports'>('map');
   const [searchQuery, setSearchQuery] = useState('');
-  const [route, setRoute] = useState<[number, number][]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showDetection, setShowDetection] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
   const [showGoModal, setShowGoModal] = useState(false);
   const [destinationInput, setDestinationInput] = useState('');
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [isFetchingSuggestions, setIsFetchingSuggestions] = useState(false);
 
   const [showLegend, setShowLegend] = useState(false);
+
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (destinationInput.length < 3) {
+        setSuggestions([]);
+        return;
+      }
+
+      setIsFetchingSuggestions(true);
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(destinationInput)}&limit=5`);
+        const data = await res.json();
+        setSuggestions(data);
+      } catch (err) {
+        console.error("Suggestions error:", err);
+      } finally {
+        setIsFetchingSuggestions(false);
+      }
+    };
+
+    const timeoutId = setTimeout(fetchSuggestions, 500);
+    return () => clearTimeout(timeoutId);
+  }, [destinationInput]);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((u) => setUser(u));
@@ -108,7 +138,7 @@ export default function App() {
   const triggerNotification = (hazardType: string) => {
     if (Notification.permission === 'granted') {
       new Notification("ROAD HAZARD AHEAD!", {
-        body: `Caution: ${hazardType} detected within 200m.`,
+        body: `A ${hazardType} is spotted in next 500m. Go slow!`,
       });
     } else if (Notification.permission !== 'denied') {
       Notification.requestPermission();
@@ -121,11 +151,24 @@ export default function App() {
     }
   }, [criticalHazards.length]);
 
+  useEffect(() => {
+    // Check for deep links on initial load / location ready
+    const destParam = searchParams.get('dest');
+    if (destParam && location && !isNavigating && !isSearching) {
+      setDestinationInput(destParam);
+      handleGo(destParam);
+    }
+  }, [location !== null, searchParams.get('dest')]);
+
   const handleGo = async (destName: string) => {
     if (!destName || !location) return;
 
     setIsSearching(true);
     setShowGoModal(false);
+    
+    // Update URL for sharing
+    navigate(`/trip?dest=${encodeURIComponent(destName)}`, { replace: true });
+
     try {
       const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(destName)}`);
       const geoData = await geoRes.json();
@@ -331,22 +374,50 @@ export default function App() {
             </Marker>
           )}
 
-            {hazards.map((hazard) => (
-              <Marker
-                key={hazard.id}
-                position={[hazard.location.latitude, hazard.location.longitude]}
-                icon={hazard.type === 'construction' ? constructionIcon : potholeIcon}
-                zIndexOffset={1000}
-              >
-                <Popup className="dark-popup">
-                  <div className="p-2 text-center bg-black/95 text-white rounded-lg">
-                    {hazard.type === 'construction' ? <HardHat className="mx-auto text-yellow-500 mb-1" size={24} /> : <AlertTriangle className="mx-auto text-red-500 mb-1" size={24} />}
-                    <p className="font-black text-white uppercase italic leading-tight">{hazard.type}</p>
-                    <p className="text-[10px] text-white/50 font-bold mt-1">Sighted: {hazard.timestamp?.toDate().toLocaleTimeString()}</p>
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
+            {visibleHazards.map((hazard) => {
+              // Robust coordinate extraction
+              const lat = hazard.location?.latitude ?? (hazard.location as any)?.lat;
+              const lng = hazard.location?.longitude ?? (hazard.location as any)?.lng;
+              
+              if (lat === undefined || lng === undefined) return null;
+
+              return (
+                <Marker
+                  key={hazard.id}
+                  position={[lat, lng]}
+                  icon={hazard.type === 'construction' ? constructionIcon : potholeIcon}
+                  zIndexOffset={1000}
+                >
+                  <Popup className="dark-popup">
+                    <div className="p-3 text-center bg-black/95 text-white rounded-xl border border-white/20 min-w-[140px]">
+                      {hazard.type === 'construction' ? <HardHat className="mx-auto text-yellow-500 mb-2" size={28} /> : <AlertTriangle className="mx-auto text-red-500 mb-2" size={28} />}
+                      <p className="font-black text-white uppercase italic leading-tight text-lg">{hazard.type}</p>
+                      
+                      <div className="mt-2 flex flex-col gap-1 items-center">
+                        <span className={cn(
+                          "px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border",
+                          hazard.source === 'osm' ? "bg-blue-500/20 text-blue-400 border-blue-500/30" :
+                          hazard.source === 'geosadak' ? "bg-orange-500/20 text-orange-400 border-orange-500/30" :
+                          hazard.source === 'rdd2022' ? "bg-purple-500/20 text-purple-400 border-purple-500/30" :
+                          hazard.source === 'static' ? "bg-gray-500/20 text-gray-400 border-gray-500/30" :
+                          "bg-green-500/20 text-green-400 border-green-500/30"
+                        )}>
+                          {hazard.source === 'osm' ? 'OSM Intel' : 
+                           hazard.source === 'geosadak' ? 'GeoSadak Verified' :
+                           hazard.source === 'rdd2022' ? 'RDD2022 AI Verified' :
+                           hazard.source === 'static' ? 'System Verified' : 
+                           'Community Live'}
+                        </span>
+                        
+                        <p className="text-[9px] text-white/40 font-bold">
+                          {hazard.timestamp?.toDate ? `Sighted: ${hazard.timestamp.toDate().toLocaleTimeString()}` : 'Live Status'}
+                        </p>
+                      </div>
+                    </div>
+                  </Popup>
+                </Marker>
+              );
+            })}
 
           {route.length > 0 && (
             <Polyline positions={route} color="#3b82f6" weight={8} opacity={0.8} lineCap="round" />
@@ -380,13 +451,10 @@ export default function App() {
                   CAUTION!
                 </div>
                 <div className="text-sm font-medium opacity-90">
-                  {criticalHazards[0].type} in next {Math.round(distanceBetween(
-                    [criticalHazards[0].location.latitude, criticalHazards[0].location.longitude],
-                    [location.lat, location.lng]
-                  ) * 1000)} meters.
+                  A <span className="underline decoration-white/40">{criticalHazards[0].type}</span> is spotted in next 500m.
                 </div>
                 <div className="font-bold text-[10px] bg-black/20 mt-1 py-1 px-2 rounded-lg inline-block uppercase tracking-wider">
-                  be awair, and go slow.
+                  Go slow, be safe.
                 </div>
               </div>
             </div>
@@ -456,6 +524,21 @@ export default function App() {
               <Camera size={24} />
               <span className="text-[10px] font-bold uppercase tracking-tight">Report</span>
             </button>
+          )}
+
+          {/* Share Button (When trip active) */}
+          {isNavigating && (
+             <button 
+               onClick={() => {
+                 const url = window.location.href;
+                 navigator.clipboard.writeText(url);
+                 alert("Trip link copied! You can now share this unique route.");
+               }}
+               className="h-16 px-6 bg-white/10 text-white rounded-2xl border border-white/20 flex flex-col items-center justify-center gap-1 backdrop-blur hover:bg-white/20 transition-all active:scale-95"
+             >
+               <MapPin size={24} className="text-blue-400" />
+               <span className="text-[10px] font-black uppercase tracking-widest">Share Path</span>
+             </button>
           )}
 
           {/* Go Button */}
@@ -553,7 +636,16 @@ export default function App() {
                 <div className="p-8 pt-2 space-y-6 overflow-y-auto scrollbar-hide">
                   <div className="relative group">
                     <div className="absolute left-5 top-1/2 -translate-y-1/2 text-white group-focus-within:text-blue-500 transition-all">
-                      <Search size={20} />
+                      {isFetchingSuggestions ? (
+                        <motion.div 
+                          animate={{ rotate: 360 }}
+                          transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                        >
+                          <Shield size={20} className="text-blue-400" />
+                        </motion.div>
+                      ) : (
+                        <Search size={20} />
+                      )}
                     </div>
                     <input 
                       autoFocus
@@ -564,6 +656,38 @@ export default function App() {
                       onKeyDown={(e) => e.key === 'Enter' && handleGo(destinationInput)}
                       className="w-full h-16 pl-14 pr-6 bg-white/5 rounded-[28px] border border-white/20 focus:ring-1 focus:ring-white/20 shadow-inner transition-all outline-none text-white font-bold text-lg placeholder:text-white/20 placeholder:font-medium" 
                     />
+
+                    {/* Suggestions Dropdown */}
+                    <AnimatePresence>
+                      {suggestions.length > 0 && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="absolute left-0 right-0 top-full mt-2 bg-black border border-white/20 rounded-3xl overflow-hidden z-[1000] shadow-2xl"
+                        >
+                          <div className="max-h-60 overflow-y-auto scrollbar-hide">
+                            {suggestions.map((s, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => {
+                                  setDestinationInput(s.display_name);
+                                  setSuggestions([]);
+                                  handleGo(s.display_name);
+                                }}
+                                className="w-full px-6 py-4 text-left hover:bg-white/10 transition-colors border-b border-white/5 flex items-start gap-3"
+                              >
+                                <MapPin size={18} className="text-blue-500 shrink-0 mt-0.5" />
+                                <div className="space-y-0.5">
+                                  <div className="text-sm font-bold text-white truncate">{s.display_name.split(',')[0]}</div>
+                                  <div className="text-[10px] text-white/40 leading-tight line-clamp-2">{s.display_name}</div>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
 
                   <button 
@@ -603,6 +727,76 @@ export default function App() {
       {/* Bottom Gradients */}
       <div className="absolute bottom-0 inset-x-0 h-48 bg-gradient-to-t from-black/40 to-transparent pointer-events-none z-20" />
 
+      {/* Path Thinking Overlay */}
+      <AnimatePresence>
+        {isSearching && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[10000] bg-black/90 backdrop-blur-3xl flex flex-col items-center justify-center text-white"
+          >
+            <div className="relative">
+              <motion.div
+                animate={{ 
+                  scale: [1, 1.1, 1],
+                  opacity: [0.5, 1, 0.5]
+                }}
+                transition={{ repeat: Infinity, duration: 2 }}
+                className="w-32 h-32 bg-blue-600/20 rounded-full flex items-center justify-center border border-blue-500/30"
+              >
+                <Shield size={64} className="text-blue-500" />
+              </motion.div>
+              
+              {/* Radar Pings */}
+              <motion.div 
+                animate={{ scale: [1, 2], opacity: [0.8, 0] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+                className="absolute inset-0 border-2 border-blue-500 rounded-full"
+              />
+              <motion.div 
+                animate={{ scale: [1, 2], opacity: [0.8, 0] }}
+                transition={{ repeat: Infinity, duration: 2, delay: 0.5 }}
+                className="absolute inset-0 border-2 border-blue-500 rounded-full"
+              />
+            </div>
+
+            <div className="mt-12 text-center space-y-4">
+              <motion.div 
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                className="font-black text-4xl tracking-tighter italic uppercase"
+              >
+                Thinking for the path...
+              </motion.div>
+              <div className="flex flex-col items-center">
+                <div className="text-blue-400 font-black text-xs uppercase tracking-[0.4em] animate-pulse">
+                  Querying Hazard Intel
+                </div>
+                <div className="mt-4 flex gap-1">
+                  {[0, 1, 2].map(i => (
+                    <motion.div
+                      key={i}
+                      animate={{ height: [8, 24, 8] }}
+                      transition={{ repeat: Infinity, duration: 0.6, delay: i * 0.1 }}
+                      className="w-1 bg-blue-500 rounded-full"
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Micro scan lines */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-10">
+              <motion.div
+                animate={{ y: ['-100%', '100%'] }}
+                transition={{ repeat: Infinity, duration: 3, ease: 'linear' }}
+                className="h-20 w-full bg-gradient-to-b from-transparent via-blue-500 to-transparent"
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

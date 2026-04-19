@@ -37,11 +37,26 @@ body {
   filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
 }
 
-/* Dark mode for Leaflet popups */
-.leaflet-popup-content-wrapper, .leaflet-popup-tip {
-  background-color: #000 !important;
-  color: white !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+/* Dark mode for Leaflet markers */
+.leaflet-marker-icon {
+  background: none !important;
+  border: none !important;
+}
+
+.hazard-marker-pothole {
+  @apply bg-red-600 rounded-full flex items-center justify-center border-4 border-white shadow-[0_0_30px_rgba(220,38,38,0.8)] animate-pulse;
+  width: 48px !important;
+  height: 48px !important;
+}
+
+.hazard-marker-construction {
+  @apply bg-yellow-500 rounded-2xl flex items-center justify-center border-4 border-white shadow-[0_0_30px_rgba(234,179,8,0.8)];
+  width: 48px !important;
+  height: 48px !important;
+}
+
+.leaflet-marker-pane {
+  z-index: 600 !important;
 }
 
 .leaflet-popup-content {
