@@ -31,20 +31,20 @@ L.Marker.prototype.options.icon = DefaultIcon;
 // Custom Icons for different hazards
 const potholeIcon = L.divIcon({
   html: `<div class="hazard-marker-pothole">
-          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
          </div>`,
   className: '',
-  iconSize: [48, 48],
-  iconAnchor: [24, 24]
+  iconSize: [24, 24],
+  iconAnchor: [12, 12]
 });
 
 const constructionIcon = L.divIcon({
   html: `<div class="hazard-marker-construction">
-          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="2" rx="1"/><path d="M5 11V7a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v4"/><path d="M8 11v-4"/><path d="M16 11v-4"/><path d="m12 11 4 4"/><path d="m12 11-4 4"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="2" rx="1"/><path d="M5 11V7a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v4"/><path d="M8 11v-4"/><path d="M16 11v-4"/><path d="m12 11 4 4"/><path d="m12 11-4 4"/></svg>
          </div>`,
   className: '',
-  iconSize: [48, 48],
-  iconAnchor: [24, 24]
+  iconSize: [24, 24],
+  iconAnchor: [12, 12]
 });
 
 // Component to handle map centering and route focus
@@ -98,6 +98,7 @@ export default function App() {
   const [isFetchingSuggestions, setIsFetchingSuggestions] = useState(false);
 
   const [showLegend, setShowLegend] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   useEffect(() => {
     const fetchSuggestions = async () => {
@@ -233,9 +234,47 @@ export default function App() {
             <Shield size={28} className="text-blue-500" />
             <span className="font-black text-xl text-white tracking-tighter italic uppercase">RoadSence</span>
           </div>
-          <button className="h-14 w-14 bg-black backdrop-blur-3xl shadow-lg rounded-[24px] flex items-center justify-center pointer-events-auto hover:bg-gray-900 transition-all border border-white/20">
-            <User size={28} className="text-white" />
-          </button>
+          
+          <div className="relative flex items-center pointer-events-auto">
+            <button 
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+              className={cn(
+                "h-14 w-14 bg-black backdrop-blur-3xl shadow-lg rounded-[24px] flex items-center justify-center transition-all border border-white/20 overflow-hidden group",
+                showProfileMenu ? "bg-white/10 ring-2 ring-blue-500/50" : "hover:bg-gray-900"
+              )}
+            >
+              <User size={28} className={cn("text-white transition-transform duration-300", showProfileMenu ? "scale-90" : "group-hover:scale-110")} />
+            </button>
+
+            {/* Profile Dropdown */}
+            <AnimatePresence>
+              {showProfileMenu && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className="absolute top-16 right-0 w-56 bg-black/95 backdrop-blur-3xl border border-white/20 rounded-[28px] shadow-2xl overflow-hidden py-2"
+                >
+                  <div className="px-4 py-3 border-b border-white/10 mb-2">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-blue-400 leading-none">Logged In as</p>
+                    <p className="text-sm font-bold text-white truncate mt-1">{user?.displayName || 'User'}</p>
+                  </div>
+                  
+                  <div className="flex flex-col">
+                    <button 
+                      onClick={() => auth.signOut()}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-red-600/10 text-left transition-colors"
+                    >
+                      <div className="w-8 h-8 rounded-xl bg-red-600/20 flex items-center justify-center border border-red-500/30">
+                        <LogIn size={16} className="text-red-400 -rotate-180" />
+                      </div>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-red-400">Sign Out</span>
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </header>
       )}
 
@@ -726,6 +765,60 @@ export default function App() {
 
       {/* Bottom Gradients */}
       <div className="absolute bottom-0 inset-x-0 h-48 bg-gradient-to-t from-black/40 to-transparent pointer-events-none z-20" />
+
+      {/* Full Screen Location Blocker */}
+      <AnimatePresence>
+        {locError && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[10000] bg-black/90 backdrop-blur-3xl flex items-center justify-center p-6"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              className="max-w-md w-full bg-black border border-white/20 rounded-[40px] p-8 text-center shadow-2xl space-y-8"
+            >
+              <div className="relative mx-auto w-24 h-24">
+                <div className="absolute inset-0 bg-red-500/20 rounded-full animate-ping" />
+                <div className="relative w-full h-full bg-red-600/20 rounded-[32px] flex items-center justify-center border border-red-500/30">
+                  <MapPin size={48} className="text-red-500" />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <h2 className="text-3xl font-black italic uppercase tracking-tighter text-white">Location Access Required</h2>
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  RoadSence is an active safety engine. We cannot scan for potholes or provide proximity alerts without your real-time GPS coordinates.
+                </p>
+              </div>
+
+              <div className="bg-white/5 border border-white/10 rounded-3xl p-6 text-left space-y-4">
+                <div className="flex gap-4 items-start">
+                  <div className="w-8 h-8 shrink-0 bg-blue-500/20 rounded-xl flex items-center justify-center border border-blue-500/30">
+                    <Info size={16} className="text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase text-blue-400 tracking-widest">Protocol</p>
+                    <p className="text-xs text-white/70 font-bold mt-1">Enable location permissions in your browser or device settings to start your journey.</p>
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                onClick={() => window.location.reload()}
+                className="w-full h-16 bg-white text-black rounded-[28px] font-black uppercase italic tracking-widest hover:bg-gray-200 transition-all active:scale-95 flex items-center justify-center gap-2"
+              >
+                <Navigation size={20} />
+                Refresh Engine
+              </button>
+
+              <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] italic">Intelligence System Status: Offline</p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Path Thinking Overlay */}
       <AnimatePresence>
