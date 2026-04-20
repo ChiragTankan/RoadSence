@@ -218,10 +218,10 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (criticalHazards.length > 0) {
-      triggerNotification(criticalHazards[0].type);
+    if (activeCriticalHazards.length > 0 && isNavigating) {
+      triggerNotification(activeCriticalHazards[0].type);
     }
-  }, [criticalHazards.length]);
+  }, [activeCriticalHazards.length, isNavigating]);
 
   useEffect(() => {
     // Check for deep links on initial load / location ready
@@ -247,13 +247,42 @@ export default function App() {
 
       if (geoData && geoData.length > 0) {
         const dest = { lat: parseFloat(geoData[0].lat), lng: parseFloat(geoData[0].lon) };
-        const routeRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${location.lng},${location.lat};${dest.lng},${dest.lat}?overview=full&geometries=geojson`);
+        const routeRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${location.lng},${location.lat};${dest.lng},${dest.lat}?overview=full&geometries=geojson&alternatives=3`);
         const routeData = await routeRes.json();
 
-        if (routeData.routes && routeData.routes[0]) {
-          const coords = routeData.routes[0].geometry.coordinates.map((c: any) => [c[1], c[0]]);
-          setRoute(coords);
+        if (routeData.routes && routeData.routes.length > 0) {
+          // SMART SAFE ROUTING LOGIC
+          // Score each route based on hazard density
+          const scoredRoutes = routeData.routes.map((r: any) => {
+            const coords = r.geometry.coordinates.map((c: any) => [c[1], c[0]]);
+            let hazardCount = 0;
+
+            // Simple danger score: how many known hazards are near this path?
+            hazards.forEach(h => {
+              const hLat = h.location?.latitude ?? (h as any).location?.lat;
+              const hLng = h.location?.longitude ?? (h as any).location?.lng;
+              if (hLat !== undefined && hLng !== undefined) {
+                const isNear = coords.some((p: [number, number]) => {
+                  return distanceBetween([hLat, hLng], p) * 1000 < 150; // within 150m of path
+                });
+                if (isNear) hazardCount++;
+              }
+            });
+
+            return { coords, hazardCount };
+          });
+
+          // Sort by hazard count (Safest first)
+          scoredRoutes.sort((a, b) => a.hazardCount - b.hazardCount);
+          
+          setRoute(scoredRoutes[0].coords);
           setIsNavigating(true);
+          
+          if (scoredRoutes[0].hazardCount > 0) {
+            alert(`Safe Route Selected: found ${scoredRoutes[0].hazardCount} hazards on this path. Proceed with caution.`);
+          } else {
+            alert("Optimal Safe Route found: zero hazards detected on this path.");
+          }
         }
       } else {
         alert("Location not found.");
@@ -612,13 +641,6 @@ export default function App() {
             <Polyline positions={route} color="#3b82f6" weight={8} opacity={0.8} lineCap="round" />
           ) }
 
-          {location && criticalHazards.length > 0 && (
-             <Circle 
-               center={currentPos} 
-               pathOptions={{ fillColor: 'red', color: 'red', weight: 1, fillOpacity: 0.2 }} 
-               radius={200} 
-             />
-          )}
         </MapContainer>
       </div>
 
@@ -632,47 +654,56 @@ export default function App() {
             exit={{ y: -120, opacity: 0, scale: 0.95 }}
             className="absolute top-24 left-0 right-0 z-[800] flex justify-center px-6"
           >
-            <div className={cn(
-              "shadow-[0_48px_100px_-20px_rgba(0,0,0,0.6)] rounded-[40px] p-[3px] max-w-sm w-full relative",
-              activeCriticalHazards[0].type === 'pothole' ? "bg-red-600 shadow-red-900/60" : "bg-yellow-500 shadow-yellow-900/60"
-            )}>
-               {/* Cut Mark / Dismiss Button */}
-               <button 
-                 onClick={() => setDismissedHazards(prev => new Set([...prev, activeCriticalHazards[0].id]))}
-                 className="absolute -top-2 -right-2 w-10 h-10 bg-black rounded-full border-2 border-white/20 flex items-center justify-center text-white z-[810] shadow-2xl active:scale-90 transition-all cursor-pointer pointer-events-auto"
-               >
-                 <X size={18} />
-               </button>
+            {(() => {
+              const alertHazard = activeCriticalHazards[0];
+              const hLat = alertHazard.location?.latitude ?? (alertHazard.location as any)?.lat;
+              const hLng = alertHazard.location?.longitude ?? (alertHazard.location as any)?.lng;
+              const distMeters = Math.round(distanceBetween([hLat, hLng], [location.lat, location.lng]) * 1000);
+              
+              return (
+                <div className={cn(
+                  "shadow-[0_48px_100px_-20px_rgba(0,0,0,0.6)] rounded-[40px] p-[3px] max-w-sm w-full relative",
+                  alertHazard.type === 'pothole' ? "bg-red-600 shadow-red-900/60" : "bg-yellow-500 shadow-yellow-900/60"
+                )}>
+                   {/* Cut Mark / Dismiss Button */}
+                   <button 
+                     onClick={() => setDismissedHazards(prev => new Set([...prev, alertHazard.id]))}
+                     className="absolute -top-2 -right-2 w-10 h-10 bg-black rounded-full border-2 border-white/20 flex items-center justify-center text-white z-[810] shadow-2xl active:scale-90 transition-all cursor-pointer pointer-events-auto"
+                   >
+                     <X size={18} />
+                   </button>
 
-               <div className="bg-black/10 backdrop-blur-3xl rounded-[38px] p-6 flex items-center gap-6 border border-white/20">
-                  <div className="relative w-16 h-16 shrink-0 bg-white/10 rounded-3xl flex items-center justify-center border border-white/20">
-                    {activeCriticalHazards[0].type === 'pothole' ? (
-                      <AlertTriangle size={32} className="text-white animate-pulse" />
-                    ) : (
-                      <HardHat size={32} className="text-white animate-pulse" />
-                    )}
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center">
-                       <div className={cn(
-                         "w-1.5 h-1.5 rounded-full animate-ping",
-                         activeCriticalHazards[0].type === 'pothole' ? "bg-red-600" : "bg-yellow-500"
-                       )} />
-                    </div>
-                  </div>
-                  
-                  <div className="flex-1 space-y-1">
-                    <div className="flex justify-between items-center">
-                       <span className="mono-label text-white/60">Proximity Warning</span>
-                       <span className="mono-label text-white/60">500m</span>
-                    </div>
-                    <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter leading-tight">
-                      {activeCriticalHazards[0].type}
-                    </h3>
-                    <p className="text-[10px] text-white/70 font-bold uppercase tracking-widest leading-none">
-                      {activeCriticalHazards[0].type === 'pothole' ? 'Immediate Action Required: Go Slow' : 'Safety Caution: Active Personnel Ahead'}
-                    </p>
-                  </div>
-               </div>
-            </div>
+                   <div className="bg-black/10 backdrop-blur-3xl rounded-[38px] p-6 flex items-center gap-6 border border-white/20">
+                      <div className="relative w-16 h-16 shrink-0 bg-white/10 rounded-3xl flex items-center justify-center border border-white/20">
+                        {alertHazard.type === 'pothole' ? (
+                          <AlertTriangle size={32} className="text-white animate-pulse" />
+                        ) : (
+                          <HardHat size={32} className="text-white animate-pulse" />
+                        )}
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center">
+                           <div className={cn(
+                             "w-1.5 h-1.5 rounded-full animate-ping",
+                             alertHazard.type === 'pothole' ? "bg-red-600" : "bg-yellow-500"
+                           )} />
+                        </div>
+                      </div>
+                      
+                      <div className="flex-1 space-y-1">
+                        <div className="flex justify-between items-center">
+                           <span className="mono-label text-white/60">Proximity Warning</span>
+                           <span className="mono-label text-white/60 font-bold">{distMeters}m</span>
+                        </div>
+                        <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter leading-tight">
+                          {alertHazard.type}
+                        </h3>
+                        <p className="text-[10px] text-white/70 font-bold uppercase tracking-widest leading-none">
+                          {alertHazard.type === 'pothole' ? 'Immediate Action Required: Go Slow' : 'Safety Caution: Active Personnel Ahead'}
+                        </p>
+                      </div>
+                   </div>
+                </div>
+              );
+            })()}
           </motion.div>
         )}
       </AnimatePresence>

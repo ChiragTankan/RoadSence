@@ -156,27 +156,20 @@ export function useHazards(
 
   // Determine which hazards to show on map
   const visibleHazards = useMemo(() => {
+    // MISSION CRITICAL: Hide all spotted hazards unless travel has started
+    if (activeRoute.length === 0) return [];
+
     let filtered = hazards;
 
-    // If navigating, only show hazards close to the route
-    if (activeRoute.length > 0) {
-      filtered = hazards.filter(h => {
-        const coords = getCoords(h);
-        if (!coords) return false;
-        return activeRoute.some((point) => {
-          const dist = distanceBetween(coords, point) * 1000;
-          return dist < 300; 
-        });
+    // Only show hazards strictly on the path
+    filtered = hazards.filter(h => {
+      const coords = getCoords(h);
+      if (!coords) return false;
+      return activeRoute.some((point) => {
+        const dist = distanceBetween(coords, point) * 1000;
+        return dist < 100; // Strictly on the path (within 100m)
       });
-    } else if (currentLocation) {
-      // Otherwise show nearby hazards (within 2km for general overview)
-      filtered = hazards.filter(h => {
-        const coords = getCoords(h);
-        if (!coords) return false;
-        const dist = distanceBetween(coords, [currentLocation.lat, currentLocation.lng]) * 1000;
-        return dist < 2000;
-      });
-    }
+    });
 
     // SPATIAL DEDUPLICATION / CLUSTERING
     // Group markers that are very close (e.g., within 50 meters) to prevent "marker overlap frustration"
@@ -219,18 +212,21 @@ export function useHazards(
       const coords = getCoords(h);
       if (!coords) return false;
 
+      // MISSION CRITICAL: Only alert during active travel (registered route)
+      if (activeRoute.length === 0) return false;
+
       const dist = distanceBetween(coords, userCoord) * 1000;
       const isClose = dist < 500; // General proximity within 500m
 
-      // If navigating, additionally ensure the hazard is on the route
-      if (activeRoute.length > 0 && isClose) {
+      // Ensure the hazard is strictly on the route
+      if (isClose) {
         return activeRoute.some((point) => {
           const pathToHazardDist = distanceBetween(coords, point) * 1000;
           return pathToHazardDist < 100; // Within 100m of the path
         });
       }
 
-      return isClose;
+      return false;
     });
   }, [hazards, currentLocation, activeRoute]);
 
