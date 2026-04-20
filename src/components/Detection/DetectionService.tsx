@@ -220,7 +220,7 @@ export function DetectionService({ location, onClose }: DetectionServiceProps) {
                                 <h4 className="text-2xl font-black text-white italic uppercase tracking-tighter">THANK YOU!</h4>
                                 <div className="h-[1px] w-12 bg-white/20 mx-auto" />
                                 <p className="text-sm font-medium text-white/70 leading-relaxed">
-                                  Your contribution helps save lives. We've pinned this hazard to the global RoadSence map for all traveling users.
+                                  Your contribution helps save lives. We've pinned this hazard to the global Road Sense map for all traveling users.
                                 </p>
                               </div>
 
@@ -246,7 +246,7 @@ export function DetectionService({ location, onClose }: DetectionServiceProps) {
                                      status === 'reporting' ? 'Global Registry' : 'Processing'}...
                                   </h4>
                                   <p className="text-[10px] text-white/50 px-8">
-                                    Point saving to RoadSence global intelligence map
+                                    Point saving to Road Sense global intelligence map
                                   </p>
                                </div>
                             </div>

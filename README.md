@@ -1,4 +1,4 @@
-# RoadSence — Shielding Your Journey with AI Hazard Intelligence
+# Road Sense — Shielding Your Journey with AI Hazard Intelligence
 
 **Team Name:** KSB48  
 **Participant:** Chirag Tankan (Solo)  
@@ -11,11 +11,11 @@ India faces a staggering crisis on its roads. Every year, **millions of accident
 
 Current navigation systems prioritize "Fastest Time" over "Safest Arrival." Drivers often find themselves on poorly maintained roads where sudden defects lead to tire bursts, loss of control, and fatal collisions. There is a critical lack of real-time, path-specific alerts that can warn a driver *before* they hit a disaster.
 
-## 🛡️ The Solution: RoadSence
-**RoadSence** is an AI-powered active safety engine that transforms navigation into a high-fidelity "Specialist Tool." It is designed to ensure that no driver ever hits a hazard they didn't see coming.
+## 🛡️ The Solution: Road Sense
+**Road Sense** is an AI-powered active safety engine that transforms navigation into a high-fidelity "Specialist Tool." It is designed to ensure that no driver ever hits a hazard they didn't see coming.
 
 ### **Our Smart Safety Pillars:**
-1.  **Smart Safe Routing**: Unlike standard GPS, RoadSence analyzes alternative paths and selects the **Optimal Safe Route**—the one with the least density of potholes and construction zones.
+1.  **Smart Safe Routing**: Unlike standard GPS, Road Sense analyzes alternative paths and selects the **Optimal Safe Route**—the one with the least density of potholes and construction zones.
 2.  **Path-Locked Intelligence**: Hazards are **only** visible and alerts are **only** triggered when the user starts a "Registered Journey." This keeps the interface clean and the driver's focus strictly on their mission-critical path.
 3.  **Proximity Intercept Alerts**: Real-time distance measurement (e.g., "Pothole detected in 120m") provides a high-priority HUD warning before the vehicle reaches the hazard, allowing for safe braking and maneuvering.
 4.  **Community Self-Healing**: Utilizing a "Social Consensus" model, a hazard is automatically removed from the global map if 5 separate community members mark it as "Fixed."
@@ -23,7 +23,7 @@ Current navigation systems prioritize "Fastest Time" over "Safest Arrival." Driv
 ---
 
 ## 🏗️ How it was Built (The Technical Journey)
-RoadSence was built from scratch leveraging a modern full-stack architecture designed for extreme low latency and high data precision.
+Road Sense was built from scratch leveraging a modern full-stack architecture designed for extreme low latency and high data precision.
 
 ### **Phase 1: Real-Time Intelligence & Data Fusion**
 We integrated multiple global and local data sources to build the initial "Hazard Mesh":
@@ -52,6 +52,6 @@ We integrated multiple global and local data sources to build the initial "Hazar
 ---
 
 ## 🚀 Impact & Future
-By prioritizing safety over speed, RoadSence aims to reduce road-defect-related accidents by up to 40%. The vision is to turn every vehicle into a "Safe Mesh Node," contributing to a collective intelligence that makes Indian roads predictable and secure for everyone.
+By prioritizing safety over speed, Road Sense aims to reduce road-defect-related accidents by up to 40%. The vision is to turn every vehicle into a "Safe Mesh Node," contributing to a collective intelligence that makes Indian roads predictable and secure for everyone.
 
 **Developed with 🛡️ by Team KSB48 (Chirag Tankan)**

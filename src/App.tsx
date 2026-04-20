@@ -307,7 +307,7 @@ export default function App() {
             <Shield size={40} className="text-white" />
           </div>
           <div className="space-y-2">
-            <h1 className="text-4xl font-bold tracking-tight">RoadSence</h1>
+            <h1 className="text-4xl font-bold tracking-tight">Road Sense</h1>
             <p className="text-gray-400">Intelligent hazard detection & real-time proximity warnings for safer roads.</p>
           </div>
           <button 
@@ -338,7 +338,7 @@ export default function App() {
                </div>
                <div className="h-8 w-[1px] bg-white/10" />
                <div className="flex flex-col justify-center">
-                 <span className="font-black text-xl text-white tracking-tighter italic uppercase leading-none">RoadSence</span>
+                 <span className="font-black text-xl text-white tracking-tighter italic uppercase leading-none">Road Sense</span>
                  <div className="flex items-center gap-2 mt-1">
                     <span className="mono-label text-blue-500/80">AI_CORE: ACTIVE</span>
                     <div className="flex gap-0.5">
@@ -496,7 +496,7 @@ export default function App() {
             </div>
 
             <div className="pt-3 border-t border-white/10 text-center">
-              <span className="mono-label text-[8px] text-white/20 tracking-[0.2em] italic">RoadSence V2.4</span>
+              <span className="mono-label text-[8px] text-white/20 tracking-[0.2em] italic">Road Sense V2.4</span>
             </div>
           </motion.div>
         </div>
@@ -1002,7 +1002,7 @@ export default function App() {
               </div>
 
               <div className="space-y-4">
-                <h1 className="text-5xl font-black italic uppercase tracking-tighter text-white">RoadSence</h1>
+                <h1 className="text-5xl font-black italic uppercase tracking-tighter text-white">Road Sense</h1>
                 <div className="flex items-center justify-center gap-3">
                   <div className="h-[1px] w-8 bg-white/20" />
                   <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500">AI Safety Intelligence</p>
