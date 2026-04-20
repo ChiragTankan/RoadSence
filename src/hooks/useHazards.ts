@@ -208,14 +208,29 @@ export function useHazards(
       })
     : [];
 
-  const criticalHazards = currentLocation
-    ? hazards.filter(h => {
-        const coords = getCoords(h);
-        if (!coords) return false;
-        const dist = distanceBetween(coords, [currentLocation.lat, currentLocation.lng]) * 1000;
-        return dist < 500; // Trigger alert within 500m (Safety distance)
-      })
-    : [];
+  const criticalHazards = useMemo(() => {
+    if (!currentLocation) return [];
+
+    const userCoord: [number, number] = [currentLocation.lat, currentLocation.lng];
+
+    return hazards.filter(h => {
+      const coords = getCoords(h);
+      if (!coords) return false;
+
+      const dist = distanceBetween(coords, userCoord) * 1000;
+      const isClose = dist < 500; // General proximity within 500m
+
+      // If navigating, additionally ensure the hazard is on the route
+      if (activeRoute.length > 0 && isClose) {
+        return activeRoute.some((point) => {
+          const pathToHazardDist = distanceBetween(coords, point) * 1000;
+          return pathToHazardDist < 100; // Within 100m of the path
+        });
+      }
+
+      return isClose;
+    });
+  }, [hazards, currentLocation, activeRoute]);
 
   return { hazards, visibleHazards, nearbyHazards, criticalHazards };
 }

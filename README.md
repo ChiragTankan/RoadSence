@@ -2,7 +2,7 @@
 
 **Team Name:** KSB48  
 **Participant:** Chirag Tankan (Solo)  
-**Hackathon:** Technovate Hackathon 2026
+**Hackathon:** HackIndia 2026
 
 ---
 

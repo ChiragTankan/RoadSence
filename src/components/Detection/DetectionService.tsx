@@ -66,34 +66,36 @@ export function DetectionService({ location, onClose }: DetectionServiceProps) {
     const base64Image = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
 
     setStatus('detecting');
+    let aiConfirmedType = 'none';
     try {
       // We verify with AI but respect the user's manual selection as primary intent
-      const AIConfirmedType = await detectHazard(base64Image);
-      
-      setStatus('reporting');
-      
-      const hazardData = {
-        type: selectedType, // Use the user's explicit choice
-        location: new GeoPoint(location.lat, location.lng),
-        geohash: geohashForLocation([location.lat, location.lng]),
-        reporterId: auth.currentUser.uid,
-        timestamp: serverTimestamp(),
-        isPublic: true
-      };
-
-      // 100% Reliable Cloud Save
-      try {
-        await addDoc(collection(db, `users/${auth.currentUser.uid}/my_reports`), hazardData);
-        await addDoc(collection(db, 'public_hazards'), hazardData);
-        setStatus('success');
-        setTimeout(onClose, 2500);
-      } catch (dbErr) {
-        console.error("Firestore report error:", dbErr);
-        alert("Sync Failed: Check your internet and try again.");
-        setStatus('idle');
-      }
+      aiConfirmedType = await detectHazard(base64Image);
     } catch (err) {
-      console.error("Detection error:", err);
+      console.warn("AI Detection non-fatal error:", err);
+      // Fallback: AI failed, but we continue with user's manual report
+    }
+    
+    setStatus('reporting');
+    
+    const hazardData = {
+      type: selectedType, // Use the user's explicit choice
+      aiVerifiedType: aiConfirmedType,
+      location: new GeoPoint(location.lat, location.lng),
+      geohash: geohashForLocation([location.lat, location.lng]),
+      reporterId: auth.currentUser.uid,
+      timestamp: serverTimestamp(),
+      isPublic: true
+    };
+
+    // 100% Reliable Cloud Save
+    try {
+      await addDoc(collection(db, `users/${auth.currentUser.uid}/my_reports`), hazardData);
+      await addDoc(collection(db, 'public_hazards'), hazardData);
+      setStatus('success');
+      setTimeout(onClose, 4000); // Give user time to read the "Thank You"
+    } catch (dbErr) {
+      console.error("Firestore report error:", dbErr);
+      alert("Sync Failed: Check your internet and try again.");
       setStatus('idle');
     }
   };
@@ -118,6 +120,7 @@ export function DetectionService({ location, onClose }: DetectionServiceProps) {
           {/* Integrated Camera View behind content */}
           <div className="absolute inset-0 z-0 opacity-40">
             <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+            <canvas ref={canvasRef} className="hidden" />
             <div className="absolute inset-0 bg-black/70" />
           </div>
 
@@ -202,27 +205,53 @@ export function DetectionService({ location, onClose }: DetectionServiceProps) {
                    
                    <AnimatePresence>
                      {status !== 'idle' && (
-                       <motion.div 
-                         initial={{ opacity: 0 }}
-                         animate={{ opacity: 1 }}
-                         exit={{ opacity: 0 }}
-                         className="absolute inset-0 bg-black/60 flex items-center justify-center z-10 backdrop-blur-md"
-                       >
-                         <div className="flex flex-col items-center gap-4 text-white text-center">
-                            {status === 'success' ? <CheckCircle size={48} className="text-green-500" /> : <Shield size={48} className="text-blue-500 animate-pulse text-center" />}
-                            <div className="space-y-1">
-                               <h4 className="text-lg font-black uppercase italic">
-                                 {status === 'blurring' ? 'Privacy Guard' : 
-                                  status === 'detecting' ? 'AI Verification' :
-                                  status === 'reporting' ? 'Global Registry' :
-                                  status === 'success' ? 'Report Logged' : 'Processing'}...
-                               </h4>
-                               <p className="text-[10px] text-white/50 px-8">
-                                 {status === 'success' ? 'Your report has been registered to the community map.' : 'Point saving to RoadSence global intelligence map'}
-                               </p>
+                        status === 'success' ? (
+                          <motion.div 
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="absolute inset-0 bg-black/90 flex items-center justify-center z-20 backdrop-blur-3xl p-8"
+                          >
+                            <div className="flex flex-col items-center gap-6 text-center">
+                              <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center border border-green-500/30">
+                                <CheckCircle size={40} className="text-green-500" />
+                              </div>
+                              
+                              <div className="space-y-3">
+                                <h4 className="text-2xl font-black text-white italic uppercase tracking-tighter">THANK YOU!</h4>
+                                <div className="h-[1px] w-12 bg-white/20 mx-auto" />
+                                <p className="text-sm font-medium text-white/70 leading-relaxed">
+                                  Your contribution helps save lives. We've pinned this hazard to the global RoadSence map for all traveling users.
+                                </p>
+                              </div>
+
+                              <div className="flex flex-col items-center gap-2">
+                                 <span className="mono-label text-green-500 font-bold">Protocol: Sync_Complete</span>
+                                 <span className="text-[10px] text-white/30 italic">Redirecting to Intelligence Hub...</span>
+                              </div>
                             </div>
-                         </div>
-                       </motion.div>
+                          </motion.div>
+                        ) : (
+                          <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-black/60 flex items-center justify-center z-10 backdrop-blur-md"
+                          >
+                            <div className="flex flex-col items-center gap-4 text-white text-center">
+                               <Shield size={48} className="text-blue-500 animate-pulse text-center" />
+                               <div className="space-y-1">
+                                  <h4 className="text-lg font-black uppercase italic">
+                                    {status === 'blurring' ? 'Privacy Guard' : 
+                                     status === 'detecting' ? 'AI Verification' :
+                                     status === 'reporting' ? 'Global Registry' : 'Processing'}...
+                                  </h4>
+                                  <p className="text-[10px] text-white/50 px-8">
+                                    Point saving to RoadSence global intelligence map
+                                  </p>
+                               </div>
+                            </div>
+                          </motion.div>
+                        )
                      )}
                    </AnimatePresence>
                 </div>

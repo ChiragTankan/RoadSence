@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline, Circle } from 'react-leaflet';
 import L from 'leaflet';
-import { Navigation, Bell, Map as MapIcon, Shield, Search, AlertOctagon, User, LogIn, Camera, X, AlertTriangle, HardHat, Info, MapPin, LayoutGrid, Settings } from 'lucide-react';
+import { Navigation, Bell, Map as MapIcon, Shield, Search, AlertOctagon, User, LogIn, Camera, X, AlertTriangle, HardHat, Info, MapPin, LayoutGrid, Settings, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate, useLocation as useRouterLocation, useSearchParams } from 'react-router-dom';
 import { auth, signInWithGoogle, db } from './lib/firebase';
@@ -101,6 +101,13 @@ export default function App() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showLocationReminder, setShowLocationReminder] = useState(false);
   const [isAppLoading, setIsAppLoading] = useState(true);
+  const [mapMode, setMapMode] = useState<'dark' | 'satellite'>('satellite');
+  const [dismissedHazards, setDismissedHazards] = useState<Set<string>>(new Set());
+
+  // Filter critical hazards that haven't been dismissed yet
+  const activeCriticalHazards = useMemo(() => {
+    return criticalHazards.filter(h => !dismissedHazards.has(h.id));
+  }, [criticalHazards, dismissedHazards]);
 
   useEffect(() => {
     // Initial app loading sequence
@@ -409,15 +416,6 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 opacity-30">
-                <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                  <LayoutGrid size={14} className="text-white" />
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <span className="text-[10px] font-black uppercase text-white/40 leading-none italic tracking-tight">V-Sync</span>
-                  <span className="mono-label mt-0.5">Offline</span>
-                </div>
-              </div>
             </div>
 
             <div className="pt-3 border-t border-white/10 text-center">
@@ -448,8 +446,11 @@ export default function App() {
           className="h-full w-full"
         >
           <TileLayer
-            attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            attribution={mapMode === 'dark' ? '&copy; CARTO' : '&copy; Esri'}
+            url={mapMode === 'dark' 
+              ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+              : "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            }
           />
           <MapController 
             center={location ? [location.lat, location.lng] : null} 
@@ -554,19 +555,38 @@ export default function App() {
 
       {/* Floating Notifications / Alerts */}
       <AnimatePresence mode="wait">
-        {criticalHazards.length > 0 && location && (
+        {activeCriticalHazards.length > 0 && location && (
           <motion.div 
+            key={activeCriticalHazards[0].id}
             initial={{ y: -120, opacity: 0, scale: 0.95 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: -120, opacity: 0, scale: 0.95 }}
-            className="absolute top-24 left-0 right-0 z-[800] pointer-events-none flex justify-center px-6"
+            className="absolute top-24 left-0 right-0 z-[800] flex justify-center px-6"
           >
-            <div className="bg-red-600 shadow-[0_48px_100px_-20px_rgba(185,28,28,0.6)] rounded-[40px] p-[3px] max-w-sm w-full pointer-events-auto overflow-hidden">
+            <div className={cn(
+              "shadow-[0_48px_100px_-20px_rgba(0,0,0,0.6)] rounded-[40px] p-[3px] max-w-sm w-full relative",
+              activeCriticalHazards[0].type === 'pothole' ? "bg-red-600 shadow-red-900/60" : "bg-yellow-500 shadow-yellow-900/60"
+            )}>
+               {/* Cut Mark / Dismiss Button */}
+               <button 
+                 onClick={() => setDismissedHazards(prev => new Set([...prev, activeCriticalHazards[0].id]))}
+                 className="absolute -top-2 -right-2 w-10 h-10 bg-black rounded-full border-2 border-white/20 flex items-center justify-center text-white z-[810] shadow-2xl active:scale-90 transition-all cursor-pointer pointer-events-auto"
+               >
+                 <X size={18} />
+               </button>
+
                <div className="bg-black/10 backdrop-blur-3xl rounded-[38px] p-6 flex items-center gap-6 border border-white/20">
                   <div className="relative w-16 h-16 shrink-0 bg-white/10 rounded-3xl flex items-center justify-center border border-white/20">
-                    <AlertTriangle size={32} className="text-white animate-pulse" />
+                    {activeCriticalHazards[0].type === 'pothole' ? (
+                      <AlertTriangle size={32} className="text-white animate-pulse" />
+                    ) : (
+                      <HardHat size={32} className="text-white animate-pulse" />
+                    )}
                     <div className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center">
-                       <div className="w-1.5 h-1.5 bg-red-600 rounded-full animate-ping" />
+                       <div className={cn(
+                         "w-1.5 h-1.5 rounded-full animate-ping",
+                         activeCriticalHazards[0].type === 'pothole' ? "bg-red-600" : "bg-yellow-500"
+                       )} />
                     </div>
                   </div>
                   
@@ -576,10 +596,10 @@ export default function App() {
                        <span className="mono-label text-white/60">500m</span>
                     </div>
                     <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter leading-tight">
-                      {criticalHazards[0].type}
+                      {activeCriticalHazards[0].type}
                     </h3>
                     <p className="text-[10px] text-white/70 font-bold uppercase tracking-widest leading-none">
-                      Immediate Action Required: Go Slow
+                      {activeCriticalHazards[0].type === 'pothole' ? 'Immediate Action Required: Go Slow' : 'Safety Caution: Active Personnel Ahead'}
                     </p>
                   </div>
                </div>

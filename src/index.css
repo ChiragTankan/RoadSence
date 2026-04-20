@@ -33,8 +33,7 @@ body {
 }
 
 .leaflet-tile-pane {
-  /* No filter here, we use native dark tiles */
-  filter: grayscale(1) brightness(0.6) contrast(1.2);
+  /* Let native dark tiles show naturally */
 }
 
 .leaflet-marker-icon {
@@ -43,15 +42,15 @@ body {
 }
 
 .hazard-marker-pothole {
-  @apply bg-red-600 rounded-full flex items-center justify-center border border-white/40 shadow-[0_0_20px_rgba(220,38,38,0.4)];
-  width: 24px !important;
-  height: 24px !important;
+  @apply bg-red-600 rounded-full flex items-center justify-center border-2 border-white shadow-md;
+  width: 22px !important;
+  height: 22px !important;
 }
 
 .hazard-marker-construction {
-  @apply bg-yellow-500 rounded-lg flex items-center justify-center border border-white/40 shadow-[0_0_20px_rgba(234,179,8,0.4)];
-  width: 24px !important;
-  height: 24px !important;
+  @apply bg-yellow-500 rounded-lg flex items-center justify-center border-2 border-white shadow-md;
+  width: 22px !important;
+  height: 22px !important;
 }
 
 .leaflet-popup-content-wrapper {
