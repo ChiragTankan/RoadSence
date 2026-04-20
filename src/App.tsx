@@ -6,10 +6,11 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline, Circle } from 'react-leaflet';
 import L from 'leaflet';
-import { Navigation, Bell, Map as MapIcon, Shield, Search, AlertOctagon, User, LogIn, Camera, X, AlertTriangle, HardHat, Info, MapPin, LayoutGrid, Settings, Globe } from 'lucide-react';
+import { Navigation, Bell, Map as MapIcon, Shield, Search, AlertOctagon, User, LogIn, Camera, X, AlertTriangle, HardHat, Info, MapPin, LayoutGrid, Settings, Globe, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate, useLocation as useRouterLocation, useSearchParams } from 'react-router-dom';
 import { auth, signInWithGoogle, db } from './lib/firebase';
+import { doc, updateDoc, arrayUnion, deleteDoc, increment, getDoc } from 'firebase/firestore';
 import { distanceBetween } from 'geofire-common';
 import { useLocation } from './hooks/useLocation';
 import { useHazards } from './hooks/useHazards';
@@ -103,8 +104,55 @@ export default function App() {
   const [isAppLoading, setIsAppLoading] = useState(true);
   const [mapMode, setMapMode] = useState<'dark' | 'satellite'>('satellite');
   const [dismissedHazards, setDismissedHazards] = useState<Set<string>>(new Set());
+  const [isVoting, setIsVoting] = useState<string | null>(null);
 
-  // Filter critical hazards that haven't been dismissed yet
+  const handleCommunityVote = async (hazard: any) => {
+    if (!user) {
+      alert("Please login to participate in community safety.");
+      return;
+    }
+
+    if (hazard.source && hazard.source !== 'community') {
+      alert("Only community-reported hazards can be marked as fixed by the community.");
+      return;
+    }
+
+    if (hazard.votedToDeleteBy?.includes(user.uid)) {
+      alert("You have already voted for this hazard.");
+      return;
+    }
+
+    setIsVoting(hazard.id);
+    try {
+      const hazardRef = doc(db, 'public_hazards', hazard.id);
+      const userReportRef = doc(db, `users/${hazard.reporterId}/my_reports`, hazard.id);
+
+      const currentVotes = (hazard.deleteVotes || 0) + 1;
+
+      if (currentVotes >= 5) {
+        // Delete from both places
+        await deleteDoc(hazardRef);
+        try {
+          await deleteDoc(userReportRef);
+        } catch (e) {
+          console.log("Personal report cleanup failed (might not be the owner)");
+        }
+        alert("Community Consensus Reached: Hazard permanent removal initiated.");
+      } else {
+        // Increment votes
+        await updateDoc(hazardRef, {
+          deleteVotes: increment(1),
+          votedToDeleteBy: arrayUnion(user.uid)
+        });
+        alert(`Vote Registered. [${currentVotes}/5] votes needed for removal.`);
+      }
+    } catch (error) {
+      console.error("Community voting error:", error);
+      alert("Voting failed. Please check your connection.");
+    } finally {
+      setIsVoting(null);
+    }
+  };
   const activeCriticalHazards = useMemo(() => {
     return criticalHazards.filter(h => !dismissedHazards.has(h.id));
   }, [criticalHazards, dismissedHazards]);
@@ -529,8 +577,29 @@ export default function App() {
                            </div>
                         </div>
 
-                        <button className="w-full py-3 bg-white text-black rounded-xl font-black uppercase tracking-widest text-[10px] italic active:scale-95 transition-all">
-                          Dismiss Alert
+                        <button 
+                          onClick={() => handleCommunityVote(hazard)}
+                          disabled={isVoting === hazard.id}
+                          className={cn(
+                            "w-full py-3 rounded-xl font-black uppercase tracking-widest text-[10px] italic active:scale-95 transition-all flex items-center justify-center gap-2",
+                            hazard.votedToDeleteBy?.includes(user?.uid) 
+                              ? "bg-green-600/20 text-green-500 border border-green-500/30" 
+                              : "bg-white text-black hover:bg-white/90"
+                          )}
+                        >
+                          {isVoting === hazard.id ? (
+                            <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                          ) : hazard.votedToDeleteBy?.includes(user?.uid) ? (
+                            <>
+                              <CheckCircle size={14} />
+                              Vote Registered ({hazard.deleteVotes || 0}/5)
+                            </>
+                          ) : (
+                            <>
+                              <Shield size={14} />
+                              Mark as Fixed ({hazard.deleteVotes || 0}/5)
+                            </>
+                          )}
                         </button>
                       </div>
                     </div>

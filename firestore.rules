@@ -25,6 +25,18 @@ service cloud.firestore {
           && data.timestamp is timestamp;
     }
 
+    function isValidVoteUpdate() {
+      let existing = resource.data;
+      let incoming = request.resource.data;
+      let diff = incoming.diff(existing);
+      
+      return isSignedIn() 
+          && diff.affectedKeys().hasOnly(['deleteVotes', 'votedToDeleteBy'])
+          && incoming.deleteVotes == (existing.get('deleteVotes', 0) + 1)
+          && incoming.votedToDeleteBy.size() == (existing.get('votedToDeleteBy', []).size() + 1)
+          && incoming.votedToDeleteBy.hasAll([request.auth.uid]);
+    }
+
     // Users Collection
     match /users/{userId} {
       allow read: if isOwner(userId);
@@ -35,7 +47,7 @@ service cloud.firestore {
         allow read: if isOwner(userId);
         allow create: if isOwner(userId) && isValidHazard(request.resource.data);
         allow update: if isOwner(userId) && isValidHazard(request.resource.data);
-        allow delete: if isOwner(userId);
+        allow delete: if isOwner(userId) || isSignedIn(); // Allow social deletion
       }
     }
 
@@ -45,14 +57,15 @@ service cloud.firestore {
       allow read: if isSignedIn();
       
       // Creating a public hazard:
-      // In a real app, this might be triggered by a Cloud Function or a batch write
-      // For this demo, we allow users to write to public_hazards if the reporterId matches.
       allow create: if isSignedIn() 
                    && isValidHazard(request.resource.data)
                    && request.resource.data.isPublic == true;
                    
-      // Prevent updates/deletes to public records by standard users for integrity
-      allow update, delete: if false; 
+      // Allow community voting update
+      allow update: if isValidVoteUpdate();
+
+      // Allow community deletion
+      allow delete: if isSignedIn(); 
     }
   }
 }

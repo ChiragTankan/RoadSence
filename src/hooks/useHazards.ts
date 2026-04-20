@@ -13,6 +13,8 @@ export interface Hazard {
   timestamp: Timestamp | { toDate: () => Date } | null;
   isPublic: boolean;
   source?: 'community' | 'static' | 'osm' | 'geosadak' | 'rdd2022';
+  deleteVotes?: number;
+  votedToDeleteBy?: string[];
 }
 
 export function useHazards(
