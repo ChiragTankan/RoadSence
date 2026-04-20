@@ -360,26 +360,6 @@ export default function App() {
           </div>
           
           <div className="relative flex items-center pointer-events-auto gap-3">
-            {/* System Telemetry (Mock) */}
-            <div className="hidden lg:flex items-center gap-6 px-6 h-14 bg-black/40 backdrop-blur-3xl border border-white/10 rounded-[24px]">
-               <div className="flex flex-col">
-                  <span className="mono-label text-white/30">System Latency</span>
-                  <span className="mono-label text-green-400">14.2ms</span>
-               </div>
-               <div className="h-6 w-[1px] bg-white/10" />
-               <div className="flex flex-col">
-                  <span className="mono-label text-white/30">Satellites</span>
-                  <span className="mono-label text-white">08/12</span>
-               </div>
-               <div className="h-6 w-[1px] bg-white/10" />
-               <div className="flex flex-col">
-                  <span className="mono-label text-white/30">Signal</span>
-                  <div className="flex items-end gap-0.5 h-3">
-                     {[2,4,6,8].map(h => <div key={h} style={{ height: h }} className="w-1 bg-blue-500 rounded-full" />)}
-                  </div>
-               </div>
-            </div>
-
             {/* User Access Terminal */}
             <button 
               onClick={() => setShowProfileMenu(!showProfileMenu)}
