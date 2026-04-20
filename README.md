@@ -1,66 +1,78 @@
-# 🛡️ RoadSence
+# RoadSence — Shielding Your Journey with AI Hazard Intelligence
 
-**Empowering Drivers. Securing Roads. Crowdsourced Safety.**
+**Team Name:** KSB48  
+**Participant:** Chirag Tankan (Solo)  
+**Hackathon:** HackIndia 2026
 
-RoadSence is a premium, community-driven application designed to make every journey safer. By combining real-time GPS tracking, high-performance AI detection, and community crowdsourcing, RoadSence keeps you informed of road hazards before they become a problem.
+---
+
+## 🛡️ Project Overview
+
+**RoadSence** is an AI-powered active safety engine designed to mitigate road accidents by providing real-time intelligence on road conditions. It transforms a standard navigation experience into a high-fidelity "Specialist Tool" for drivers, providing instant proximity warnings for potholes, construction zones, and other critical hazards.
+
+According to global road safety data, road defects like potholes and unmarked construction contribute significantly to urban accidents. **RoadSence** solves this by aggregating multi-source data (OpenStreetMap, GeoSadak, RDD2022 AI datasets, and Community Live feeds) into a single, tactical interface.
 
 ---
 
 ## 🚀 Key Features
 
-### 📍 Intelligent Real-Time Map
-* **Global Hazard Sync**: Instantly see reports from other drivers worldwide.
-* **Dark-Mode Precision**: High-contrast, easy-to-read map optimized for both day and night driving.
-* **Smart Context Legend**: A compact instrument-cluster legend that explains every marker on your path.
+### 1. **AI Safety Intelligence Header**
+A high-fidelity instrument panel displaying real-time system metrics:
+- **AI_CORE Status**: Real-time heartbeat of the detection engine.
+- **Satellite Telemetry**: Connectivity status for precision positioning.
+- **System Latency**: Monitoring data processing speed (e.g., 14.2ms) for mission-critical response.
 
-### ⚠️ Proactive Hazard Reporting
-* **One-Tap Reporting**: Use the **Report (Camera)** button to flag Potholes or Work Zones in seconds.
-* **AI-Verified Vision**: Every report is analyzed by the Gemini 1.5 Pro AI to ensure high accuracy while maintaining privacy through automatic blurring.
-* **Visual Confirmation**: Real-time feedback cards show you exactly what is being reported and the status of the cloud sync.
+### 2. **Tactical Proximity Warnings**
+When a hazard is intercepted within the **500m safety radius**, the system triggers an immersive **Safety Intercept Alert**. This high-priority notification forces driver focus with pulsing visual cues and direct "Immediate Action Required" instructions.
 
-### 🔔 Live Safety Alerts
-* **Proximity Pings**: Receive high-priority "Impact Alerts" when you are within 200 meters of a critical hazard.
-* **Dynamic Distance Tracker**: See exactly how far away a hazard is in real-time as you drive toward it.
+### 3. **Spatial Deduplication Engine**
+To resolve visual clutter in high-density hazard areas, RoadSence uses an advanced spatial merging algorithm. Markers within a **50-meter radius** are consolidated into a single actionable point, providing a clean, scannable route while maintaining safety precision.
 
-### 🗺️ Smart Navigation
-* **Trip Planner**: Use the **GO NOW** button to search for any destination.
-* **Route Visualization**: High-clarity blue pathing that guides you through the safest possible roads.
-* **One-Touch Stop**: Easily end your trip with the "Stop Trip" control.
+### 4. **Multi-Source Data Fusion**
+RoadSence isn't just a map; it's a data aggregator. Every hazard popup provides an "Intelligence Report" detailing:
+- **Source Origin**: OSM Dataset 04A, GeoSadak Verified, or Community Live.
+- **Confidence Rating**: AI-calculated verification percentage (e.g., 92.4%).
+- **TR-ID**: Unique transaction tracking for every synchronized hazard.
 
----
-
-## 📱 How to Use
-
-### 1. Reporting a Hazard
-1. Tap the **Blue Camera Icon** at the bottom left.
-2. Select the type of hazard (**Pothole** or **Work Zone**).
-3. The live camera card will appear. Point your phone at the hazard and tap the **Lens Trigger (Bottom Circle)**.
-4. RoadSence will process the image, verify the location, and sync it to the global map automatically.
-
-### 2. Planning a Trip
-1. Tap the **GO NOW** center button.
-2. Enter your destination (e.g., "Main Street" or "Airport").
-3. Hit **START TRIP** to see your route and begin navigation.
-
-### 3. Understanding Markers
-* **🔴 Red Circle (Alert Triangle)**: Pothole detected. Drive with caution or avoid the lane.
-* **🟡 Yellow Hexagon (Hard Hat)**: Ongoing construction or work zone. Expect delays or slow traffic.
-* **🔵 Blue Pulsing Pulse**: Your current live location.
+### 5. **Specialist Design Language**
+Built using a "Specialist Tool" aesthetic:
+- **Dark Architecture**: Native CARTO DarkMatter tiles for high-contrast visibility.
+- **Glassmorphism**: Advanced UI panels with backdrop-blur and border highlights.
+- **Typography**: JetBrains Mono for a precise, technical "Mission Control" feel.
 
 ---
 
-## 🛠️ Technical Excellence
-RoadSence is built with a production-grade tech stack for maximum reliability:
-* **Frontend**: React 18, Vite, and Framer Motion for a "Glassmorphic" floating UI.
-* **Mapping**: Leaflet API with customized tile rendering.
-* **Intelligence**: Google Gemini 1.5 Pro Vision for hazard verification.
-* **Backend**: Firebase Firestore (NoSQL) for millisecond-latency global data sync.
-* **Location**: Geofire-common for high-performance spatial queries.
+## 🛠️ Tech Stack
+
+- **Frontend**: React 18, Vite, TypeScript
+- **Styling**: Tailwind CSS (Specialist Tool Utility Classes)
+- **Mapping**: Leaflet, React Leaflet (Native Dark Tiles)
+- **Animations**: Framer Motion (Immersive Transitions & Alerts)
+- **Backend/Storage**: Firebase (Auth & Firestore Intelligence Sync)
+- **APIs**:
+    - **Overpass API**: For real-world OpenStreetMap hazard ingestion.
+    - **Nominatim API**: For fast, efficient location indexing.
+    - **OSRM**: For high-speed route geometries.
 
 ---
 
-## 🔒 Your Privacy
-We believe in safety *and* privacy. RoadSence automatically applies a **6px Gaussian Blur** to all captured images before they reach the AI verification layer to protect personal information, license plates, and bystanders.
+## 📸 Presentation Details
+
+RoadSence is presented through a "Systems Startup" sequence. Upon initialization, the user is briefed on the **Location Protocol** required for real-time scanning. The interface then transitions from a sleek startup screen into the **Active Monitoring Mesh**.
+
+### **How it Works**
+1. **Mesh Sync**: The app starts by syncing thousands of global hazard points from the cloud.
+2. **Scanner Mode**: As the user moves, the system monitors their 500m "Safety Bubble."
+3. **Intercept**: If a pothole or construction zone enters the bubble, the HUD shifts to high-alert "Proximity Mode."
+4. **Report**: Users can report live hazards via the "Access Terminal," which are instantly shared with the global KSB48 mesh.
 
 ---
-*RoadSence — Navigation Built on Community Trust.*
+
+## 🛣️ Roadmap
+- [ ] **Direct Neural Vision**: Integrating device camera for real-time AI pothole detection through the browser.
+- [ ] **V-Sync Audio Alerts**: High-precision spatial audio for direction-aware hazard warnings.
+- [ ] **Fleet Intelligence**: Dedicated dashboard for city authorities to track and fix reported defects.
+
+---
+
+**Developed with 🛡️ by Team KSB48 (Chirag Tankan)**

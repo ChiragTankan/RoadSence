@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline, Circle } from 'react-leaflet';
 import L from 'leaflet';
-import { Navigation, Bell, Map as MapIcon, Shield, Search, AlertOctagon, User, LogIn, Camera, X, AlertTriangle, HardHat, Info, MapPin } from 'lucide-react';
+import { Navigation, Bell, Map as MapIcon, Shield, Search, AlertOctagon, User, LogIn, Camera, X, AlertTriangle, HardHat, Info, MapPin, LayoutGrid, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate, useLocation as useRouterLocation, useSearchParams } from 'react-router-dom';
 import { auth, signInWithGoogle, db } from './lib/firebase';
@@ -31,7 +31,7 @@ L.Marker.prototype.options.icon = DefaultIcon;
 // Custom Icons for different hazards
 const potholeIcon = L.divIcon({
   html: `<div class="hazard-marker-pothole">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
          </div>`,
   className: '',
   iconSize: [24, 24],
@@ -40,7 +40,7 @@ const potholeIcon = L.divIcon({
 
 const constructionIcon = L.divIcon({
   html: `<div class="hazard-marker-construction">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="2" rx="1"/><path d="M5 11V7a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v4"/><path d="M8 11v-4"/><path d="M16 11v-4"/><path d="m12 11 4 4"/><path d="m12 11-4 4"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-black"><path d="M2 18a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v2z"/><path d="M10 10V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5"/><path d="M4 15v-3a6 6 0 0 1 12 0v3"/><path d="m9 11 3 3 3-3"/></svg>
          </div>`,
   className: '',
   iconSize: [24, 24],
@@ -243,68 +243,108 @@ export default function App() {
   return (
     <div className="relative h-screen h-[100dvh] w-full bg-black overflow-hidden font-sans selection:bg-blue-500/30">
       
-      {/* Top Controls - Simplified */}
+      {/* Top Controls - Specialist Instrument Header */}
       {!isNavigating && (
         <header className="absolute top-6 inset-x-6 z-[600] flex justify-between items-center pointer-events-none">
-          <div className="h-14 w-auto px-5 bg-black backdrop-blur-3xl shadow-lg rounded-[24px] flex items-center gap-3 pointer-events-auto border border-white/20">
-            <Shield size={28} className="text-blue-500" />
-            <span className="font-black text-xl text-white tracking-tighter italic uppercase">RoadSence</span>
+          <div className="flex flex-col gap-1 pointer-events-auto">
+             <div className="h-14 w-auto px-5 bg-black backdrop-blur-3xl shadow-lg rounded-[24px] flex items-center gap-4 border border-white/20">
+               <div className="relative">
+                 <Shield size={28} className="text-blue-500" />
+                 <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse border border-black" />
+               </div>
+               <div className="h-8 w-[1px] bg-white/10" />
+               <div className="flex flex-col justify-center">
+                 <span className="font-black text-xl text-white tracking-tighter italic uppercase leading-none">RoadSence</span>
+                 <div className="flex items-center gap-2 mt-1">
+                    <span className="mono-label text-blue-500/80">AI_CORE: ACTIVE</span>
+                    <div className="flex gap-0.5">
+                       {[1,1,1,0.4].map((op, i) => (
+                         <div key={i} style={{ opacity: op }} className="w-1 h-2 bg-blue-500 rounded-full" />
+                       ))}
+                    </div>
+                 </div>
+               </div>
+             </div>
           </div>
           
-          <div className="relative flex items-center pointer-events-auto">
-            {/* Transient Location Reminder - Subtle Notification */}
-            <AnimatePresence>
-               {showLocationReminder && (
-                 <motion.div
-                   initial={{ opacity: 0, x: 20 }}
-                   animate={{ opacity: 1, x: 0 }}
-                   exit={{ opacity: 0, x: 20 }}
-                   className="absolute right-16 top-0 h-14 bg-red-600/90 backdrop-blur-3xl text-white px-6 rounded-2xl flex items-center gap-2 border border-white/20 shadow-2xl whitespace-nowrap overflow-hidden"
-                 >
-                   <MapPin size={18} className="animate-bounce" />
-                   <span className="text-[10px] font-black uppercase tracking-widest leading-none">Enable Location for scanner</span>
-                   <button onClick={() => setShowLocationReminder(false)} className="ml-2">
-                     <X size={14} />
-                   </button>
-                 </motion.div>
-               )}
-            </AnimatePresence>
+          <div className="relative flex items-center pointer-events-auto gap-3">
+            {/* System Telemetry (Mock) */}
+            <div className="hidden lg:flex items-center gap-6 px-6 h-14 bg-black/40 backdrop-blur-3xl border border-white/10 rounded-[24px]">
+               <div className="flex flex-col">
+                  <span className="mono-label text-white/30">System Latency</span>
+                  <span className="mono-label text-green-400">14.2ms</span>
+               </div>
+               <div className="h-6 w-[1px] bg-white/10" />
+               <div className="flex flex-col">
+                  <span className="mono-label text-white/30">Satellites</span>
+                  <span className="mono-label text-white">08/12</span>
+               </div>
+               <div className="h-6 w-[1px] bg-white/10" />
+               <div className="flex flex-col">
+                  <span className="mono-label text-white/30">Signal</span>
+                  <div className="flex items-end gap-0.5 h-3">
+                     {[2,4,6,8].map(h => <div key={h} style={{ height: h }} className="w-1 bg-blue-500 rounded-full" />)}
+                  </div>
+               </div>
+            </div>
 
+            {/* User Access Terminal */}
             <button 
               onClick={() => setShowProfileMenu(!showProfileMenu)}
               className={cn(
-                "h-14 w-14 bg-black backdrop-blur-3xl shadow-lg rounded-[24px] flex items-center justify-center transition-all border border-white/20 overflow-hidden group",
-                showProfileMenu ? "bg-white/10 ring-2 ring-blue-500/50" : "hover:bg-gray-900"
+                "h-14 w-14 glass-panel shadow-lg rounded-[24px] flex items-center justify-center transition-all overflow-hidden group",
+                showProfileMenu ? "bg-blue-600/20 ring-2 ring-blue-500/50" : "hover:bg-white/5"
               )}
             >
-              <User size={28} className={cn("text-white transition-transform duration-300", showProfileMenu ? "scale-90" : "group-hover:scale-110")} />
+              <div className="relative">
+                <User size={24} className={cn("text-white transition-transform duration-300", showProfileMenu ? "scale-90" : "group-hover:scale-110")} />
+                <div className="absolute inset-0 border border-white/20 rounded-full scale-150 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
             </button>
 
-            {/* Profile Dropdown */}
+            {/* Profile Terminal Panel */}
             <AnimatePresence>
               {showProfileMenu && (
                 <motion.div
                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  className="absolute top-16 right-0 w-56 bg-black/95 backdrop-blur-3xl border border-white/20 rounded-[28px] shadow-2xl overflow-hidden py-2"
+                  className="absolute top-16 right-0 w-64 glass-panel rounded-[32px] shadow-2xl overflow-hidden p-2"
                 >
-                  <div className="px-4 py-3 border-b border-white/10 mb-2">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-blue-400 leading-none">Logged In as</p>
-                    <p className="text-sm font-bold text-white truncate mt-1">{user?.displayName || 'User'}</p>
+                  <div className="p-4 bg-white/5 rounded-3xl border border-white/10 mb-2">
+                    <div className="flex items-center gap-3 mb-3">
+                       <div className="w-10 h-10 rounded-2xl bg-blue-600/20 flex items-center justify-center border border-blue-500/30">
+                          <Shield size={18} className="text-blue-400" />
+                       </div>
+                       <div className="flex-1 min-w-0">
+                          <p className="mono-label text-white/40 mb-0.5">Authorized Operative</p>
+                          <p className="text-sm font-black text-white truncate uppercase italic tracking-tight">{user?.displayName || 'User'}</p>
+                       </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 pt-3 border-t border-white/10">
+                       <div className="p-2 bg-black/40 rounded-xl border border-white/5">
+                          <p className="mono-label text-white/30 truncate">Reports</p>
+                          <p className="text-xs font-bold text-white uppercase italic">12.4k</p>
+                       </div>
+                       <div className="p-2 bg-black/40 rounded-xl border border-white/5">
+                          <p className="mono-label text-white/30 truncate">Trust</p>
+                          <p className="text-xs font-bold text-blue-400 capitalize italic">Elite</p>
+                       </div>
+                    </div>
                   </div>
                   
-                  <div className="flex flex-col">
-                    <button 
-                      onClick={() => auth.signOut()}
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-red-600/10 text-left transition-colors"
-                    >
-                      <div className="w-8 h-8 rounded-xl bg-red-600/20 flex items-center justify-center border border-red-500/30">
-                        <LogIn size={16} className="text-red-400 -rotate-180" />
-                      </div>
-                      <span className="text-[11px] font-black uppercase tracking-widest text-red-400">Sign Out</span>
-                    </button>
-                  </div>
+                  <button 
+                    onClick={() => auth.signOut()}
+                    className="flex items-center gap-4 px-6 py-4 hover:bg-red-600/20 text-left transition-all group/out rounded-2xl w-full"
+                  >
+                    <div className="w-10 h-10 rounded-2xl bg-red-600/10 flex items-center justify-center border border-red-500/20 group-hover/out:bg-red-600/30 transition-colors">
+                      <LogIn size={20} className="text-red-500 -rotate-180" />
+                    </div>
+                    <div className="flex flex-col">
+                       <span className="text-[12px] font-black uppercase tracking-[0.15em] text-red-500 italic">Deactivate</span>
+                       <span className="mono-label text-red-500/40">Secure Sign Out</span>
+                    </div>
+                  </button>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -312,41 +352,19 @@ export default function App() {
         </header>
       )}
 
-      {/* Community Stats Badge */}
-      {!isNavigating && hazards.length > 0 && (
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="absolute top-24 left-0 right-0 z-[550] pointer-events-none flex justify-center px-4"
-        >
-          <div className="bg-black backdrop-blur-3xl shadow-2xl border border-white/20 rounded-[28px] px-6 py-4 flex items-center gap-4 pointer-events-auto">
-             <div className="flex -space-x-2">
-                {[1,2,3].map(i => (
-                   <div key={i} className="w-6 h-6 rounded-full bg-blue-900/40 border border-white/20 flex items-center justify-center overflow-hidden">
-                      <User size={12} className="text-blue-400" />
-                   </div>
-                ))}
-             </div>
-             <div className="flex flex-col">
-                <span className="text-[10px] font-black uppercase text-blue-400 tracking-wider leading-none">Global Coverage</span>
-                <span className="text-xs font-bold text-white/70">{hazards.length} potholes synced</span>
-             </div>
-          </div>
-        </motion.div>
-      )}
 
-      {/* Map Legend - Responsive and Polished */}
+      {/* Map Legend - Specialist Hardware Panel */}
       {!isNavigating && (
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 z-50 flex flex-col items-end gap-3 pointer-events-none group/legend">
+        <div className="absolute right-6 top-1/2 -translate-y-1/2 z-50 flex flex-col items-end gap-4 pointer-events-none group/legend">
           {/* Mobile Toggle Button */}
           <button 
             onClick={() => setShowLegend(!showLegend)}
-            className="md:hidden w-10 h-10 bg-black backdrop-blur-3xl shadow-2xl rounded-xl flex items-center justify-center pointer-events-auto border border-white/20 active:scale-95 transition-all text-white"
+            className="md:hidden w-12 h-12 glass-panel shadow-2xl rounded-2xl flex items-center justify-center pointer-events-auto active:scale-95 transition-all text-white"
           >
-            <Info size={18} className={cn("text-blue-500 transition-transform duration-500", showLegend ? "rotate-90" : "")} />
+            <Settings size={20} className={cn("text-blue-500 transition-transform duration-700", showLegend ? "rotate-90" : "")} />
           </button>
 
-          {/* Legend Box */}
+          {/* Tactical Status Panel */}
           <motion.div 
             initial={false}
             animate={{ 
@@ -355,57 +373,55 @@ export default function App() {
               scale: (showLegend || (typeof window !== 'undefined' && window.innerWidth >= 768)) ? 1 : 0.9
             }}
             className={cn(
-              "bg-black backdrop-blur-3xl p-3 rounded-[24px] border border-white/20",
-              "shadow-[0_20px_50px_-12px_rgba(0,0,0,1)]",
-              "flex flex-col gap-3 pointer-events-auto transition-all duration-300",
-              "w-28 md:w-32 lg:w-32",
+              "glass-panel p-4 rounded-[32px] shadow-[0_32px_64px_-16px_rgba(0,0,0,1)]",
+              "flex flex-col gap-5 pointer-events-auto transition-all duration-300 w-36",
               showLegend ? "flex" : "hidden md:flex"
             )}
           >
-            <div className="flex items-center gap-2 border-b border-white/10 pb-2">
-               <div className="w-5 h-5 rounded-md bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
-                 <MapIcon size={10} className="text-white" />
-               </div>
-               <span className="text-[7px] font-black uppercase tracking-[0.2em] text-gray-500 italic leading-none">Legend</span>
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+               <span className="mono-label text-white/50 italic">Markers</span>
+               <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
             </div>
             
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-2 group/item">
-                <div className="relative">
-                  <div className="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center shadow-lg group-hover/item:scale-110 transition-transform duration-300">
-                    <AlertTriangle size={14} className="text-white" />
+            <div className="space-y-5">
+              <div className="flex items-center gap-3 group/item">
+                <div className="relative shrink-0">
+                  <div className="hazard-marker-pothole border-white/10 shadow-none scale-110">
+                    <AlertTriangle size={12} className="text-white" />
                   </div>
-                  <div className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-20 pointer-events-none" />
+                  <div className="absolute -inset-1 rounded-full border border-red-500/30 animate-pulse" />
                 </div>
-                <div className="flex flex-col items-start">
-                  <span className="text-[8px] font-black uppercase italic leading-none text-white">Pothole</span>
-                  <span className="text-[6px] font-bold text-gray-500 mt-0.5">Alert</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 group/item">
-                <div className="w-8 h-8 rounded-lg bg-yellow-500 flex items-center justify-center shadow-lg group-hover/item:scale-110 transition-transform duration-300">
-                  <HardHat size={14} className="text-black" />
-                </div>
-                <div className="flex flex-col items-start text-left">
-                  <span className="text-[8px] font-black uppercase italic leading-none text-white">Work</span>
-                  <span className="text-[6px] font-bold text-gray-500 mt-0.5">Caution</span>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] font-black uppercase text-white leading-none">Pothole</span>
+                  <span className="mono-label text-red-500/60 mt-0.5">Critical</span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 opacity-10">
-                <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
-                  <Navigation size={14} className="text-white/40" />
+              <div className="flex items-center gap-3 group/item">
+                <div className="shrink-0 scale-110">
+                   <div className="hazard-marker-construction border-white/10 shadow-none">
+                      <HardHat size={12} className="text-black" />
+                   </div>
                 </div>
-                <div className="flex flex-col items-start opacity-70">
-                  <span className="text-[8px] font-black uppercase italic leading-none text-white/40">Path</span>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] font-black uppercase text-white leading-none">Work Zone</span>
+                  <span className="mono-label text-yellow-500/60 mt-0.5">Caution</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 opacity-30">
+                <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                  <LayoutGrid size={14} className="text-white" />
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] font-black uppercase text-white/40 leading-none italic tracking-tight">V-Sync</span>
+                  <span className="mono-label mt-0.5">Offline</span>
                 </div>
               </div>
             </div>
 
-            {/* Micro Detail */}
-            <div className="mt-1 flex justify-center">
-               <div className="w-6 h-1 rounded-full bg-white/10" />
+            <div className="pt-3 border-t border-white/10 text-center">
+              <span className="mono-label text-[8px] text-white/20 tracking-[0.2em] italic">RoadSence V2.4</span>
             </div>
           </motion.div>
         </div>
@@ -432,8 +448,8 @@ export default function App() {
           className="h-full w-full"
         >
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
+            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           />
           <MapController 
             center={location ? [location.lat, location.lng] : null} 
@@ -461,30 +477,60 @@ export default function App() {
                   icon={hazard.type === 'construction' ? constructionIcon : potholeIcon}
                   zIndexOffset={1000}
                 >
-                  <Popup className="dark-popup">
-                    <div className="p-3 text-center bg-black/95 text-white rounded-xl border border-white/20 min-w-[140px]">
-                      {hazard.type === 'construction' ? <HardHat className="mx-auto text-yellow-500 mb-2" size={28} /> : <AlertTriangle className="mx-auto text-red-500 mb-2" size={28} />}
-                      <p className="font-black text-white uppercase italic leading-tight text-lg">{hazard.type}</p>
-                      
-                      <div className="mt-2 flex flex-col gap-1 items-center">
-                        <span className={cn(
-                          "px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border",
-                          hazard.source === 'osm' ? "bg-blue-500/20 text-blue-400 border-blue-500/30" :
-                          hazard.source === 'geosadak' ? "bg-orange-500/20 text-orange-400 border-orange-500/30" :
-                          hazard.source === 'rdd2022' ? "bg-purple-500/20 text-purple-400 border-purple-500/30" :
-                          hazard.source === 'static' ? "bg-gray-500/20 text-gray-400 border-gray-500/30" :
-                          "bg-green-500/20 text-green-400 border-green-500/30"
-                        )}>
-                          {hazard.source === 'osm' ? 'OSM Intel' : 
-                           hazard.source === 'geosadak' ? 'GeoSadak Verified' :
-                           hazard.source === 'rdd2022' ? 'RDD2022 AI Verified' :
-                           hazard.source === 'static' ? 'System Verified' : 
-                           'Community Live'}
-                        </span>
-                        
-                        <p className="text-[9px] text-white/40 font-bold">
-                          {hazard.timestamp?.toDate ? `Sighted: ${hazard.timestamp.toDate().toLocaleTimeString()}` : 'Live Status'}
-                        </p>
+                  <Popup closeButton={false}>
+                    <div className="p-0 overflow-hidden">
+                      <div className="px-5 py-4 bg-black/40 border-b border-white/10 flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                          <div className={cn(
+                            "w-10 h-10 rounded-xl flex items-center justify-center border",
+                            hazard.type === 'construction' ? "bg-yellow-500/20 border-yellow-500/30" : "bg-red-500/20 border-red-500/30"
+                          )}>
+                            {hazard.type === 'construction' ? <HardHat className="text-yellow-500" size={20} /> : <AlertTriangle className="text-red-500" size={20} />}
+                          </div>
+                          <div>
+                            <p className="mono-label text-white/40 mb-0.5 leading-none">Hazard Detected</p>
+                            <p className="text-lg font-black text-white italic uppercase tracking-tighter leading-none">{hazard.type}</p>
+                          </div>
+                        </div>
+                        <div className="h-10 w-[1px] bg-white/10" />
+                        <div className="text-right">
+                          <p className="mono-label text-white/40 mb-0.5 leading-none">Confidence</p>
+                          <p className="text-[10px] font-black text-blue-400">92.4%</p>
+                        </div>
+                      </div>
+
+                      <div className="p-5 space-y-4">
+                        <div className="flex items-center justify-between">
+                           <span className={cn(
+                            "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-[0.1em] border",
+                            hazard.source === 'osm' ? "bg-blue-500/10 text-blue-400 border-blue-500/20" :
+                            hazard.source === 'geosadak' ? "bg-orange-500/10 text-orange-400 border-orange-500/20" :
+                            "bg-green-500/10 text-green-400 border-green-500/20"
+                          )}>
+                             {hazard.source === 'osm' ? 'OSM DATASET 04A' : 
+                              hazard.source === 'geosadak' ? 'GEOSADAK VERIFIED' :
+                              'LIVE FEED'}
+                           </span>
+                           <span className="mono-label text-white/30 italic">TR-ID: {hazard.id.slice(0, 8)}</span>
+                        </div>
+
+                        <div className="p-3 bg-white/5 rounded-2xl border border-white/5 space-y-2">
+                           <div className="flex justify-between items-center">
+                              <span className="mono-label text-white/40">Timestamp</span>
+                              <span className="mono-label text-white/70">{hazard.timestamp?.toDate ? hazard.timestamp.toDate().toLocaleTimeString() : 'ACTIVE_LIVE'}</span>
+                           </div>
+                           <div className="flex justify-between items-center">
+                              <span className="mono-label text-white/40">Status</span>
+                              <span className="mono-label text-green-400 flex items-center gap-1">
+                                <div className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />
+                                Monitoring
+                              </span>
+                           </div>
+                        </div>
+
+                        <button className="w-full py-3 bg-white text-black rounded-xl font-black uppercase tracking-widest text-[10px] italic active:scale-95 transition-all">
+                          Dismiss Alert
+                        </button>
                       </div>
                     </div>
                   </Popup>
@@ -507,29 +553,36 @@ export default function App() {
       </div>
 
       {/* Floating Notifications / Alerts */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {criticalHazards.length > 0 && location && (
           <motion.div 
-            initial={{ y: -100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -100, opacity: 0 }}
-            className="absolute top-16 left-0 right-0 z-[800] pointer-events-none flex justify-center px-6"
+            initial={{ y: -120, opacity: 0, scale: 0.95 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: -120, opacity: 0, scale: 0.95 }}
+            className="absolute top-24 left-0 right-0 z-[800] pointer-events-none flex justify-center px-6"
           >
-            <div className="bg-red-600 text-white p-6 rounded-[32px] shadow-[0_40px_80px_-15px_rgba(220,38,38,0.5)] flex items-center gap-6 border-4 border-white/30 backdrop-blur-xl max-w-sm w-full pointer-events-auto ring-1 ring-black/20">
-            <div className="bg-black/40 rounded-2xl p-3 shadow-inner border border-white/10">
-                <AlertOctagon size={32} className="text-white animate-bounce" />
-              </div>
-              <div className="flex-1">
-                <div className="font-black text-xl leading-tight uppercase tracking-tight italic">
-                  CAUTION!
-                </div>
-                <div className="text-sm font-medium opacity-90">
-                  A <span className="underline decoration-white/40">{criticalHazards[0].type}</span> is spotted in next 500m.
-                </div>
-                <div className="font-bold text-[10px] bg-black/20 mt-1 py-1 px-2 rounded-lg inline-block uppercase tracking-wider">
-                  Go slow, be safe.
-                </div>
-              </div>
+            <div className="bg-red-600 shadow-[0_48px_100px_-20px_rgba(185,28,28,0.6)] rounded-[40px] p-[3px] max-w-sm w-full pointer-events-auto overflow-hidden">
+               <div className="bg-black/10 backdrop-blur-3xl rounded-[38px] p-6 flex items-center gap-6 border border-white/20">
+                  <div className="relative w-16 h-16 shrink-0 bg-white/10 rounded-3xl flex items-center justify-center border border-white/20">
+                    <AlertTriangle size={32} className="text-white animate-pulse" />
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center">
+                       <div className="w-1.5 h-1.5 bg-red-600 rounded-full animate-ping" />
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1 space-y-1">
+                    <div className="flex justify-between items-center">
+                       <span className="mono-label text-white/60">Proximity Warning</span>
+                       <span className="mono-label text-white/60">500m</span>
+                    </div>
+                    <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter leading-tight">
+                      {criticalHazards[0].type}
+                    </h3>
+                    <p className="text-[10px] text-white/70 font-bold uppercase tracking-widest leading-none">
+                      Immediate Action Required: Go Slow
+                    </p>
+                  </div>
+               </div>
             </div>
           </motion.div>
         )}

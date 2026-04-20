@@ -1,10 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, monospace;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
 @utility scrollbar-hide {
@@ -17,7 +17,7 @@
 
 body {
   font-family: var(--font-sans);
-  @apply bg-black text-white;
+  @apply bg-[#050505] text-white selection:bg-blue-500/30;
 }
 
 /* Fix Leaflet map height */
@@ -25,41 +25,64 @@ body {
   width: 100%;
   height: 100%;
   background: #000 !important;
+  font-family: var(--font-sans) !important;
 }
 
-/* Custom styles for map components */
-.gm-style-iw {
-  @apply rounded-xl border-none shadow-xl !p-0;
+.leaflet-control-container {
+  @apply opacity-0 pointer-events-none;
 }
 
-/* Dark mode for Leaflet tiles */
 .leaflet-tile-pane {
-  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+  /* No filter here, we use native dark tiles */
+  filter: grayscale(1) brightness(0.6) contrast(1.2);
 }
 
-/* Dark mode for Leaflet markers */
 .leaflet-marker-icon {
   background: none !important;
   border: none !important;
 }
 
 .hazard-marker-pothole {
-  @apply bg-red-600 rounded-full flex items-center justify-center border-2 border-white/80 shadow-[0_0_15px_rgba(220,38,38,0.5)];
+  @apply bg-red-600 rounded-full flex items-center justify-center border border-white/40 shadow-[0_0_20px_rgba(220,38,38,0.4)];
   width: 24px !important;
   height: 24px !important;
 }
 
 .hazard-marker-construction {
-  @apply bg-yellow-500 rounded-lg flex items-center justify-center border-2 border-white/80 shadow-[0_0_15px_rgba(234,179,8,0.5)];
+  @apply bg-yellow-500 rounded-lg flex items-center justify-center border border-white/40 shadow-[0_0_20px_rgba(234,179,8,0.4)];
   width: 24px !important;
   height: 24px !important;
 }
 
-.leaflet-marker-pane {
-  z-index: 600 !important;
+.leaflet-popup-content-wrapper {
+  @apply !bg-black/95 !backdrop-blur-xl !border !border-white/10 !rounded-3xl !shadow-2xl;
+  padding: 0 !important;
+}
+
+.leaflet-popup-tip {
+  @apply !bg-black/95 !border-l !border-t !border-white/10;
 }
 
 .leaflet-popup-content {
-  margin: 0 !important;
-  width: auto !important;
+  @apply !m-0 !w-auto;
+}
+
+/* Custom Specialist Tool Glassmorphism */
+.glass-panel {
+  @apply bg-black/40 backdrop-blur-3xl border border-white/10;
+}
+
+.glass-card {
+  @apply bg-white/5 backdrop-blur-2xl border border-white/10;
+}
+
+/* Technical Detail Styles */
+.mono-label {
+  font-family: var(--font-mono);
+  @apply text-[9px] uppercase tracking-widest font-medium;
+}
+
+.dot-pattern {
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0);
+  background-size: 20px 20px;
 }
