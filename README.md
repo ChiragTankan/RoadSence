@@ -1,8 +1,8 @@
 # Road Sense — Shielding Your Journey with AI Hazard Intelligence
 
 **Team Name:** KSB48  
-**Participant:** Chirag Tankan 
-**Hackathon:** Technovate Hackathon 2026
+**Participant:** Chirag Tankan (Solo)  
+**Hackathon:** HackIndia 2026
 
 ---
 

@@ -86,6 +86,8 @@ export default function App() {
 
   const [user, setUser] = useState(auth.currentUser);
   const [route, setRoute] = useState<[number, number][]>([]);
+  const [allRoutes, setAllRoutes] = useState<any[]>([]);
+  const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
   const { location, error: locError } = useLocation();
   const { hazards, visibleHazards, criticalHazards } = useHazards(location, user, route);
   const [activeTab, setActiveTab] = useState<'map' | 'reports'>('map');
@@ -253,7 +255,7 @@ export default function App() {
         if (routeData.routes && routeData.routes.length > 0) {
           // SMART SAFE ROUTING LOGIC
           // Score each route based on hazard density
-          const scoredRoutes = routeData.routes.map((r: any) => {
+          const processedRoutes = routeData.routes.map((r: any, idx: number) => {
             const coords = r.geometry.coordinates.map((c: any) => [c[1], c[0]]);
             let hazardCount = 0;
 
@@ -269,20 +271,26 @@ export default function App() {
               }
             });
 
-            return { coords, hazardCount };
+            return { 
+              coords, 
+              hazardCount, 
+              distance: r.distance, 
+              duration: r.duration,
+              id: idx
+            };
           });
 
-          // Sort by hazard count (Safest first)
-          scoredRoutes.sort((a, b) => a.hazardCount - b.hazardCount);
+          // Sort alternatives: we want to present them, but maybe highlight the safest
+          setAllRoutes(processedRoutes);
           
-          setRoute(scoredRoutes[0].coords);
+          // Default to the safest route (lowest hazard count)
+          const safestIdx = processedRoutes.indexOf(
+            processedRoutes.reduce((prev: any, curr: any) => (prev.hazardCount < curr.hazardCount ? prev : curr))
+          );
+          
+          setSelectedRouteIndex(safestIdx);
+          setRoute(processedRoutes[safestIdx].coords);
           setIsNavigating(true);
-          
-          if (scoredRoutes[0].hazardCount > 0) {
-            alert(`Safe Route Selected: found ${scoredRoutes[0].hazardCount} hazards on this path. Proceed with caution.`);
-          } else {
-            alert("Optimal Safe Route found: zero hazards detected on this path.");
-          }
         }
       } else {
         alert("Location not found.");
@@ -637,9 +645,35 @@ export default function App() {
               );
             })}
 
-          {route.length > 0 && (
-            <Polyline positions={route} color="#3b82f6" weight={8} opacity={0.8} lineCap="round" />
-          ) }
+          {isNavigating && allRoutes.length > 0 && (
+            <>
+              {/* Render alternative routes first (bottom layers) */}
+              {allRoutes.map((r, idx) => idx !== selectedRouteIndex && (
+                <Polyline 
+                  key={`alt-${idx}`}
+                  positions={r.coords} 
+                  color="#94a3b8" 
+                  weight={7} 
+                  opacity={0.7} 
+                  lineCap="round"
+                  eventHandlers={{
+                    click: () => {
+                      setSelectedRouteIndex(idx);
+                      setRoute(r.coords);
+                    }
+                  }}
+                />
+              ))}
+              {/* Highlighted selected route (top layer) */}
+              <Polyline 
+                positions={allRoutes[selectedRouteIndex].coords} 
+                color="#3b82f6" 
+                weight={10} 
+                opacity={1} 
+                lineCap="round"
+              />
+            </>
+          )}
 
         </MapContainer>
       </div>
@@ -725,15 +759,23 @@ export default function App() {
               />
               
               <div className="flex items-center gap-6">
-                 <div className="bg-blue-600/20 p-4 rounded-3xl border border-blue-500/30">
-                    <Navigation size={32} className="text-blue-400 animate-pulse" />
-                 </div>
-                 <div className="flex flex-col">
-                    <div className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em]">Navigating to</div>
-                    <div className="text-white font-black text-2xl tracking-tight max-w-[150px] truncate italic uppercase">
-                       {destinationInput || "Your Path"}
-                    </div>
-                 </div>
+                <div className="bg-blue-600/20 p-4 rounded-3xl border border-blue-500/30">
+                  <Navigation size={32} className="text-blue-400 animate-pulse" />
+                </div>
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2">
+                    <div className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em]">Route {selectedRouteIndex + 1}</div>
+                    {allRoutes[selectedRouteIndex]?.hazardCount === 0 ? (
+                      <span className="bg-green-500/20 text-green-400 text-[8px] font-bold px-1.5 py-0.5 rounded border border-green-500/30 uppercase">Safest</span>
+                    ) : (
+                      <span className="bg-yellow-500/20 text-yellow-400 text-[8px] font-bold px-1.5 py-0.5 rounded border border-yellow-500/30 uppercase">{allRoutes[selectedRouteIndex]?.hazardCount} Hazards</span>
+                    )}
+                    <span className="text-white/40 text-[10px] font-black uppercase tracking-[0.1em]">• {(allRoutes[selectedRouteIndex]?.distance / 1000).toFixed(1)} km</span>
+                  </div>
+                  <div className="text-white font-black text-2xl tracking-tight max-w-[150px] truncate italic uppercase">
+                    {destinationInput || "Your Path"}
+                  </div>
+                </div>
               </div>
 
                <button 
