@@ -154,32 +154,49 @@ export function useHazards(
 
   // Determine which hazards to show on map
   const visibleHazards = useMemo(() => {
+    let filtered = hazards;
+
     // If navigating, only show hazards close to the route
     if (activeRoute.length > 0) {
-      return hazards.filter(h => {
+      filtered = hazards.filter(h => {
         const coords = getCoords(h);
         if (!coords) return false;
-        
-        // We check every route point to ensure no hazards are missed (no sampling)
-        // 300m threshold to account for map data and GPS offsets
         return activeRoute.some((point) => {
           const dist = distanceBetween(coords, point) * 1000;
           return dist < 300; 
         });
       });
-    }
-    
-    // Otherwise show nearby hazards (within 2km for general overview)
-    if (currentLocation) {
-      return hazards.filter(h => {
+    } else if (currentLocation) {
+      // Otherwise show nearby hazards (within 2km for general overview)
+      filtered = hazards.filter(h => {
         const coords = getCoords(h);
         if (!coords) return false;
         const dist = distanceBetween(coords, [currentLocation.lat, currentLocation.lng]) * 1000;
         return dist < 2000;
       });
     }
-    
-    return hazards;
+
+    // SPATIAL DEDUPLICATION / CLUSTERING
+    // Group markers that are very close (e.g., within 50 meters) to prevent "marker overlap frustration"
+    const uniqueHazards: Hazard[] = [];
+    const minDistanceMeters = 50;
+
+    filtered.forEach(h => {
+      const coords = getCoords(h);
+      if (!coords) return;
+
+      const isDuplicate = uniqueHazards.some(uh => {
+        const uhCoords = getCoords(uh);
+        if (!uhCoords) return false;
+        return distanceBetween(coords, uhCoords) * 1000 < minDistanceMeters;
+      });
+
+      if (!isDuplicate) {
+        uniqueHazards.push(h);
+      }
+    });
+
+    return uniqueHazards;
   }, [hazards, activeRoute, currentLocation]);
 
   const nearbyHazards = currentLocation 

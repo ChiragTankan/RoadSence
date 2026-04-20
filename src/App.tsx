@@ -99,7 +99,23 @@ export default function App() {
 
   const [showLegend, setShowLegend] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showLocationReminder, setShowLocationReminder] = useState(false);
+  const [isAppLoading, setIsAppLoading] = useState(true);
 
+  useEffect(() => {
+    // Initial app loading sequence
+    const timer = setTimeout(() => setIsAppLoading(false), 3500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    // Show location reminder for few seconds on initial load if location missing
+    if (!location || locError) {
+      setShowLocationReminder(true);
+      const timer = setTimeout(() => setShowLocationReminder(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [location === null, locError !== null]);
   useEffect(() => {
     const fetchSuggestions = async () => {
       if (destinationInput.length < 3) {
@@ -236,6 +252,24 @@ export default function App() {
           </div>
           
           <div className="relative flex items-center pointer-events-auto">
+            {/* Transient Location Reminder - Subtle Notification */}
+            <AnimatePresence>
+               {showLocationReminder && (
+                 <motion.div
+                   initial={{ opacity: 0, x: 20 }}
+                   animate={{ opacity: 1, x: 0 }}
+                   exit={{ opacity: 0, x: 20 }}
+                   className="absolute right-16 top-0 h-14 bg-red-600/90 backdrop-blur-3xl text-white px-6 rounded-2xl flex items-center gap-2 border border-white/20 shadow-2xl whitespace-nowrap overflow-hidden"
+                 >
+                   <MapPin size={18} className="animate-bounce" />
+                   <span className="text-[10px] font-black uppercase tracking-widest leading-none">Enable Location for scanner</span>
+                   <button onClick={() => setShowLocationReminder(false)} className="ml-2">
+                     <X size={14} />
+                   </button>
+                 </motion.div>
+               )}
+            </AnimatePresence>
+
             <button 
               onClick={() => setShowProfileMenu(!showProfileMenu)}
               className={cn(
@@ -766,55 +800,68 @@ export default function App() {
       {/* Bottom Gradients */}
       <div className="absolute bottom-0 inset-x-0 h-48 bg-gradient-to-t from-black/40 to-transparent pointer-events-none z-20" />
 
-      {/* Full Screen Location Blocker */}
+      {/* Initial Startup Loading Screen */}
       <AnimatePresence>
-        {locError && (
+        {isAppLoading && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[10000] bg-black/90 backdrop-blur-3xl flex items-center justify-center p-6"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0, transition: { duration: 0.8, ease: "easeOut" } }}
+            className="fixed inset-0 z-[20000] bg-black flex flex-col items-center justify-center p-6 text-center"
           >
             <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              className="max-w-md w-full bg-black border border-white/20 rounded-[40px] p-8 text-center shadow-2xl space-y-8"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="space-y-12 max-w-sm"
             >
-              <div className="relative mx-auto w-24 h-24">
-                <div className="absolute inset-0 bg-red-500/20 rounded-full animate-ping" />
-                <div className="relative w-full h-full bg-red-600/20 rounded-[32px] flex items-center justify-center border border-red-500/30">
-                  <MapPin size={48} className="text-red-500" />
+              <div className="relative mx-auto">
+                <motion.div
+                  animate={{ 
+                    scale: [1, 1.2, 1],
+                    rotate: [0, 5, -5, 0]
+                  }}
+                  transition={{ repeat: Infinity, duration: 3 }}
+                  className="w-24 h-24 bg-blue-600 rounded-[32px] flex items-center justify-center shadow-2xl shadow-blue-500/20 mx-auto"
+                >
+                  <Shield size={48} className="text-white" />
+                </motion.div>
+                <div className="absolute -inset-4 bg-blue-500/10 rounded-full blur-2xl animate-pulse" />
+              </div>
+
+              <div className="space-y-4">
+                <h1 className="text-5xl font-black italic uppercase tracking-tighter text-white">RoadSence</h1>
+                <div className="flex items-center justify-center gap-3">
+                  <div className="h-[1px] w-8 bg-white/20" />
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500">AI Safety Intelligence</p>
+                  <div className="h-[1px] w-8 bg-white/20" />
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <h2 className="text-3xl font-black italic uppercase tracking-tighter text-white">Location Access Required</h2>
-                <p className="text-gray-400 text-sm leading-relaxed">
-                  RoadSence is an active safety engine. We cannot scan for potholes or provide proximity alerts without your real-time GPS coordinates.
-                </p>
-              </div>
-
-              <div className="bg-white/5 border border-white/10 rounded-3xl p-6 text-left space-y-4">
-                <div className="flex gap-4 items-start">
-                  <div className="w-8 h-8 shrink-0 bg-blue-500/20 rounded-xl flex items-center justify-center border border-blue-500/30">
-                    <Info size={16} className="text-blue-400" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black uppercase text-blue-400 tracking-widest">Protocol</p>
-                    <p className="text-xs text-white/70 font-bold mt-1">Enable location permissions in your browser or device settings to start your journey.</p>
-                  </div>
-                </div>
-              </div>
-
-              <button 
-                onClick={() => window.location.reload()}
-                className="w-full h-16 bg-white text-black rounded-[28px] font-black uppercase italic tracking-widest hover:bg-gray-200 transition-all active:scale-95 flex items-center justify-center gap-2"
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1 }}
+                className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-md"
               >
-                <Navigation size={20} />
-                Refresh Engine
-              </button>
+                <div className="flex gap-4 items-center">
+                  <div className="w-10 h-10 bg-red-600/20 rounded-xl flex items-center justify-center border border-red-500/30">
+                    <MapPin size={20} className="text-red-500 animate-bounce" />
+                  </div>
+                  <div className="text-left flex-1">
+                    <p className="text-[10px] font-black uppercase text-red-500 tracking-widest">Protocol Required</p>
+                    <p className="text-[11px] font-bold text-white/70 leading-snug">Please ensure GPS/Location is ON for real-time hazard detection.</p>
+                  </div>
+                </div>
+              </motion.div>
 
-              <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] italic">Intelligence System Status: Offline</p>
+              <div className="w-full bg-white/10 h-1 rounded-full overflow-hidden">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: "100%" }}
+                  transition={{ duration: 3 }}
+                  className="h-full bg-blue-500"
+                />
+              </div>
             </motion.div>
           </motion.div>
         )}
