@@ -1,9 +1,4 @@
 # Road Sense — Shielding Your Journey with AI Hazard Intelligence
-
-**Team Name:** KSB48  
-**Participant:** Chirag Tankan (Solo)  
-**Hackathon:** HackIndia 2026
-
 ---
 
 ## 🚩 Problem Statement
@@ -54,4 +49,4 @@ We integrated multiple global and local data sources to build the initial "Hazar
 ## 🚀 Impact & Future
 By prioritizing safety over speed, Road Sense aims to reduce road-defect-related accidents by up to 40%. The vision is to turn every vehicle into a "Safe Mesh Node," contributing to a collective intelligence that makes Indian roads predictable and secure for everyone.
 
-**Developed with 🛡️ by Team KSB48 (Chirag Tankan)**
+**Developed with 🛡️ by Chirag Tankan**
